@@ -1,6 +1,4 @@
-<header>
 # HelmHUD
-</header>
 
 ## A Heads-Up Display for sportswear!
 

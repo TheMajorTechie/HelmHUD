@@ -1,8 +1,0 @@
----
-title: "Test blog! We're live!"
-description: "test description lorem ipsum"
-date: 2024-01-30
----
-
-## Aw yeah!
-![20230526_205150](https://github.com/TheMajorTechie/HelmHUD/assets/29270676/979d598d-daa0-4ff2-a034-bfd2eecb12b7)

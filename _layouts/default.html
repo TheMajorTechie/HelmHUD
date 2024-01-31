@@ -47,7 +47,7 @@
         {% endfor %}
       </section>
 	  
-	  	<div class="pagination">
+	  	<section class="pagination">
          {% if paginator.previous_page %}
          <a href="{{ paginator.previous_page_path }}" class="previous">
            Previous
@@ -63,7 +63,7 @@
          {% else %}
             <span class="next ">Next</span>
          {% endif %}
-         </div>
+         </section>
     </div>
 	
 

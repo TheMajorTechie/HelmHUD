@@ -7,6 +7,5 @@ plugins:
 - jekyll-paginate
 show_downloads: false
 paginate: 2
-paginate_path: "/HelmHUD/page:num/"
 basewebsite: /HelmHUD
 permalink: date

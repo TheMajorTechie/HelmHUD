@@ -1,6 +1,7 @@
 ---
 title: "Project Start"
 description: "This is the first official post on the development journey of the HelmetHUD project."
+author: "Vincent Banh"
 date: 2024-01-30
 ---
 

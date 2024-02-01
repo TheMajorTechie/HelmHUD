@@ -7,3 +7,15 @@ plugins:
 show_downloads: false
 basewebsite: /HelmHUD
 permalink: date
+collections:
+  authors:
+    output: true
+    permalink: author/:title/
+
+defaults:
+  -
+    scope:
+      path: ""
+      type: authors
+    values:
+      layout: author

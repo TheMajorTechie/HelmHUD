@@ -35,7 +35,6 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-	  <p>POST LAYOUT</p>
         {% for author in site.authors %}
 	        {% if post.authors contains author.username or author.username == post.authors %}
 	            <a href="{{ site.url }}{{ site.baseurl }}/author/{{ author.username }}">{{ author.name }}</a>

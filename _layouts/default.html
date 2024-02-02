@@ -39,8 +39,7 @@
         <ul>
             {% for post in site.posts %}
                 <li>
-                   <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
-				   {{ post.date| date: "%m-%d-%Y" }}
+                   <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2> {{ post.date| date: "%m-%d-%Y" }}
                    {% assign authordata = '' | split:'@' %}
                         {% for author in site.authors %}
                             {% if post.authors contains author.username or author.username == post.authors %}

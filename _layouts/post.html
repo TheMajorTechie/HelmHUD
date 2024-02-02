@@ -35,11 +35,17 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        {% for author in site.authors %}
-	        {% if page.authors contains author.username or author.username == page.authors %}
-	            <a href="{{ site.url }}{{ site.baseurl }}/author/{{ author.username }}">{{ author.name }}</a>
-	        {% endif %}
-        {% endfor %}
+        {% assign authordata = '' | split:'@' %}
+            {% for author in site.authors %}
+                {% if page.authors contains author.username or author.username == page.authors %}
+                    {% capture data %}
+                        <a href="{{ site.url }}{{ site.baseurl }}/author/{{ author.username }}">{{ author.name }}</a>
+                    {% endcapture %}
+                    {% assign authordata = authordata | push: data %}
+                {% endif %}
+            {% endfor %}
+            <p>Written by {{ authordata | array_to_sentence_string }}</p>
+		<p>{{ page.description }}</p>
 		{{ content }}
       </section>
 
@@ -50,6 +56,9 @@
         <p class="copyright">{{ site.title | default: site.github.repository_name }} maintained by <a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a></p>
         {% endif %}
         <p>Published with <a href="https://pages.github.com">GitHub Pages</a> using the Jekyll Slate theme.</p>
+		<p>Further acknowledgements:
+		<br>jetholt.com - Jekyll tutorials
+		</p>
 		<p>© 2024 Vincent Banh, Michael Marcias, Hong Chen, Carter Edginton</p>
       </footer>
     </div>

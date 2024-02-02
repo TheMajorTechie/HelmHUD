@@ -48,12 +48,13 @@
 		{% endif %}
 		
 		<h1>Blogs written</h1>
-		
-		{% for post in site.posts %}
-			{% if post.authors contains page.username or page.username == post.authors %}
-				<a href="{{ site.url }}{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
-			{% endif %}
-		{% endfor %}
+		<ul>
+			{% for post in site.posts %}
+				{% if post.authors contains page.username or page.username == post.authors %}
+					<li><h3><a href="{{ site.url }}{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h3></li>
+				{% endif %}
+			{% endfor %}
+		</ul>
       </section>
 
     <!-- FOOTER  -->

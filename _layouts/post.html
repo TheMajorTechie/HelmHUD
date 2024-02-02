@@ -35,6 +35,8 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
+		{{ page.title }}
+		{{ page.date }}
         {% assign authordata = '' | split:'@' %}
             {% for author in site.authors %}
                 {% if page.authors contains author.username or author.username == page.authors %}

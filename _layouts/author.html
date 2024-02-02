@@ -41,11 +41,13 @@
         {% endif %}
 			<h1 class="site-title">{{ page.name }}</h1>
 		{% if page.bio %}
-			<h2 class="author-bio">{{ page.bio }}</h2>
+			<h3 class="author-bio">{{ page.bio }}</h2>
 		{% endif %}
 		{% if page.location %}
 			<div class="author-location">{{ page.location }}</div>
 		{% endif %}
+		
+		<h1>Blogs written</h1>
 		
 		{% for post in site.posts %}
 			{% if post.authors contains page.username or page.username == post.authors %}

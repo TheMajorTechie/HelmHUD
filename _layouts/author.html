@@ -35,18 +35,23 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        {% assign authordata = '' | split:'@' %}
-            {% for author in site.authors %}
-                {% if page.authors contains author.username or author.username == page.authors %}
-                    {% capture data %}
-                        <a href="{{ site.url }}{{ site.baseurl }}/author/{{ author.username }}">{{ author.name }}</a>
-                    {% endcapture %}
-                    {% assign authordata = authordata | push: data %}
-                {% endif %}
-            {% endfor %}
-            <p>Written by {{ authordata | array_to_sentence_string }}</p>
-		<!--<p>{{ page.description }}</p>-->
-		{{ content }}
+        <!--{{ content }}-->
+        {% if page.picture %}
+            <img class="author-profile-image" src="/{{ page.picture }}" alt="{{ page.name }}" />
+        {% endif %}
+			<h1 class="site-title">{{ page.name }}</h1>
+		{% if page.bio %}
+			<h2 class="author-bio">{{ page.bio }}</h2>
+		{% endif %}
+		{% if page.location %}
+			<div class="author-location">{{ page.location }}</div>
+		{% endif %}
+		
+		{% for post in site.posts %}
+			{% if post.authors contains page.username or page.username == post.authors %}
+				<a href="{{ site.url }}{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
+			{% endif %}
+		{% endfor %}
       </section>
 
     <!-- FOOTER  -->

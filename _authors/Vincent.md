@@ -7,4 +7,5 @@ url_short: themajortechie.com
 bio: I'm Vincent, though I often go by "TheMajorTechie" or "Tonkus" online. I like to dabble in vintage electronics. A lot.
 [//]: # (picture: assets/images/jet.jpg)
 twitter: themajortechie
+layout: author
 ---

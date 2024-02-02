@@ -40,7 +40,12 @@
             {% for post in site.posts %}
                 <li>
                    <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
-				   <p>{{ post.authors }}</p>
+				   <!--<p>{{ post.authors }}</p>-->
+                   {% for author in site.authors %}
+	                  {% if post.authors contains author.username or author.username == post.authors %}
+	                     <a href="{{ site.url }}{{ site.baseurl }}/author/{{ author.username }}">{{ author.name }}</a>
+	                  {% endif %}
+                   {% endfor %}
 				   <p>{{ post.description }}</p>
                 </li>
             {% endfor %}

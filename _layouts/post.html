@@ -36,7 +36,7 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         {% for author in site.authors %}
-	        {% if post.authors contains author.username or author.username == post.authors %}
+	        {% if page.authors contains author.username or author.username == page.authors %}
 	            <a href="{{ site.url }}{{ site.baseurl }}/author/{{ author.username }}">{{ author.name }}</a>
 	        {% endif %}
         {% endfor %}

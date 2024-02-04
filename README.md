@@ -2,6 +2,8 @@
 
 ## A Heads-Up Display for sportswear!
 
+Check out our progress on our [blog](https://themajortechie.github.io/HelmHUD/)!
+
 More coming soon-ish! ;)
 
 <footer>

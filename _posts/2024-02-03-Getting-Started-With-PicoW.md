@@ -107,3 +107,7 @@ slightly if you're using Command Prompt instead.
 # Moving forward and closing notes
 
 I haven't actually followed the steps to create a new project yet as of writing, but if there is anything else that comes up unexpectedly that needs to be written down, they will be listed below. 
+
+* You'll need to add the two following environment variables if they aren't already present in order to use the above instructions:
+   * ``PICO_SDK_PATH`` = ``C:\Program Files\Raspberry Pi\Pico SDK v1.5.1\pico-sdk``
+   * ``PICO_EXAMPLES_PATH`` = ``%userprofile%\Documents\Pico-v1.5.1\pico-examples``

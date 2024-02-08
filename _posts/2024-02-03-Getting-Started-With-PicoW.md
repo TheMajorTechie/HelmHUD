@@ -113,23 +113,26 @@ I haven't actually followed the steps to create a new project yet as of writing,
    * ``PICO_EXAMPLES_PATH`` = ``%userprofile%\Documents\Pico-v1.5.1\pico-examples``
 
 * You must add "set(PICO_BOARD pico_w)" to your CMakeLists as well to avoid any weirdness.
-* Here is a fully-filled CMakeLists.txt file for this specific tutorial: ```cmake_minimum_required(VERSION 3.13)
+* Here is a fully-filled CMakeLists.txt file for this specific tutorial:
 
-set(PICO_BOARD pico_w)
-# initialize the SDK based on PICO_SDK_PATH
-# note: this must happen before project()
-include(pico_sdk_import.cmake)
+    ``` cmake
+    cmake_minimum_required(VERSION 3.13)
 
-project(my_project)
+    set(PICO_BOARD pico_w)
+    # initialize the SDK based on PICO_SDK_PATH
+    # note: this must happen before project()
+    include(pico_sdk_import.cmake)
 
-# initialize the Raspberry Pi Pico SDK
-pico_sdk_init()
+    project(my_project)
 
-# rest of your project
-if(TARGET tinyusb_device)
-    add_executable(hello_world
-        hello_world.c
-    )
+    # initialize the Raspberry Pi Pico SDK
+    pico_sdk_init()
+
+    # rest of your project
+    if(TARGET tinyusb_device)
+        add_executable(hello_world
+            hello_world.c
+        )
 
     # Add pico_stdlib library which aggregates commonly used features
     target_link_libraries(hello_world pico_stdlib pico_cyw43_arch_none)
@@ -141,4 +144,5 @@ if(TARGET tinyusb_device)
     # create map/bin/hex/uf2 file in addition to ELF.
     pico_add_extra_outputs(hello_world)
 
-endif()```
+    endif()
+    ```

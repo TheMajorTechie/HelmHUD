@@ -1,6 +1,6 @@
 ---
 username: Michael
-name: Michael Marcias
+name: Michael Macias
 location: Salt Lake City, UT
 url_full: 
 url_short: 

@@ -1,6 +1,6 @@
 ---
 title: "Getting Started (again)"
-description: "After deciding to make the switch from C/C++ to MicroPython, I'm here once again to make a writeup on getting things set up and ready. The "example code" here is more or less the beginnings of the full project itself."
+description: "After deciding to make the switch from C/C++ to MicroPython, I'm here once again to make a writeup on getting things set up and ready. The example code here is more or less the beginnings of the full project itself."
 authors: [Vincent]
 date: 2024-03-18
 ---

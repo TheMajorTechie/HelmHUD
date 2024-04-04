@@ -25,3 +25,4 @@ Now, for one Pico, upload all the code from src/HelmHUD. For the other, upload e
 ...That's it. That's the tutorial.
 
 ## Acknowledgements
+[Bluetooth device ID list](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Assigned_Numbers/out/en/Assigned_Numbers.pdf?v=1712006562540)

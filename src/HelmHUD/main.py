@@ -88,6 +88,16 @@ def scroll_screen_in_out(screen):
     if i!= oled_width:
       oled.fill(0)
       
+async def maintain_temp_device():
+    try:
+        await temp_sensor.characteristic.read()
+    except OSError:
+        print("OS Error.")
+        temp_present = 0
+    except TimeoutError:
+        print("Error: Timeout")
+        temp_present = 0
+      
 async def main():
     #Set up Bluetooth temperature sensor
     global temp_present
@@ -101,12 +111,22 @@ async def main():
 
     while True:
         global screen1_row1, screen1_row2, screen1_row3
+        #maintain_temp_device()
         if temp_present == 1:
             screen1_row2 = ""
             screen1_row3 = ""
-            temp_deg_c = _decode_temperature(await temp_sensor.characteristic.read())
+            try:
+                temp_deg_c = _decode_temperature(await temp_sensor.characteristic.read())
+            except:
+                temp_present == 0
+                print("Disconnected from temperature sensor.")
             screen1_row1 = "Temperature: {:.2f}".format(temp_deg_c)
             print("Temperature: {:.2f}".format(temp_deg_c))
+        if temp_present == 0:
+            temp_device = await find_sensors("HH_Temp")
+            if temp_device:
+                temp_sensor = Sensor(temp_device)
+                await setup_temp()
         await asyncio.sleep_ms(1000)
         screen1 = [[0, 0 , screen1_row1], [0, 10, screen1_row2], [0, 20, screen1_row3]]
         scroll_screen_in_out(screen1)

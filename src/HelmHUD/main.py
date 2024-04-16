@@ -118,7 +118,7 @@ async def main():
             try:
                 temp_deg_c = _decode_temperature(await temp_sensor.characteristic.read())
             except:
-                temp_present == 0
+                temp_present = 0
                 print("Disconnected from temperature sensor.")
             screen1_row1 = "Temperature: {:.2f}".format(temp_deg_c)
             print("Temperature: {:.2f}".format(temp_deg_c))

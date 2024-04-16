@@ -88,45 +88,57 @@ def scroll_screen_in_out(screen):
     if i!= oled_width:
       oled.fill(0)
       
-async def maintain_temp_device():
-    try:
-        await temp_sensor.characteristic.read()
-    except OSError:
-        print("OS Error.")
-        temp_present = 0
-    except TimeoutError:
-        print("Error: Timeout")
-        temp_present = 0
+def check_devices():
+    global temp_sensor												#add additional sensors here as they're implemented!
+    
+    if temp_present == 0:											#if there is no temperature sensor, try to connect to it.
+        temp_device = await find_sensors("HH_Temp")
+        print("Searching for temperature sensor HH_Temp")
+        if temp_device:
+            temp_sensor = Sensor(temp_device)
+            await setup_temp()
+            print("Temperature sensor now present.")
+            
+    #if power_present == 0:
+        
+    #if humid_present == 0:
+        
       
 async def main():
     #Set up Bluetooth temperature sensor
     global temp_present
     global temp_sensor
+    global screen1_row1, screen1_row2, screen1_row3
+    
+    no_sensors = [temp_present == 0, power_present == 0, humid_present == 0]			#a set of parameters to check if there are no sensors
+
     temp_device = await find_sensors("HH_Temp")
-    if not temp_device:
-        print("Temperature sensor not found")
-    else:
+    if temp_device:
         temp_sensor = Sensor(temp_device)
         await setup_temp()
 
     while True:
-        global screen1_row1, screen1_row2, screen1_row3
-        #maintain_temp_device()
-        if temp_present == 1:
+        await check_devices()							#check to see if devices are still present
+        
+        if all(no_sensors):								#if no devices are connected, print the default "no devices found" message
+            screen1_row1 = 'No'
+            screen1_row2 = 'Devices'
+            screen1_row3 = 'Found'
+        else:
+            screen1_row1 = ""
             screen1_row2 = ""
             screen1_row3 = ""
+            
+        if temp_present == 1:							#if a sensor is present, start decoding and displaying data from it.
             try:
                 temp_deg_c = _decode_temperature(await temp_sensor.characteristic.read())
+                screen1_row1 = "Temperature: {:.2f}".format(temp_deg_c)
+                print("Temperature: {:.2f}".format(temp_deg_c))
             except:
                 temp_present = 0
                 print("Disconnected from temperature sensor.")
-            screen1_row1 = "Temperature: {:.2f}".format(temp_deg_c)
-            print("Temperature: {:.2f}".format(temp_deg_c))
-        if temp_present == 0:
-            temp_device = await find_sensors("HH_Temp")
-            if temp_device:
-                temp_sensor = Sensor(temp_device)
-                await setup_temp()
+            
+        #sleep and prepare screen for redraw
         await asyncio.sleep_ms(1000)
         screen1 = [[0, 0 , screen1_row1], [0, 10, screen1_row2], [0, 20, screen1_row3]]
         scroll_screen_in_out(screen1)

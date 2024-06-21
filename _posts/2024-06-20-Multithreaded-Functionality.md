@@ -29,7 +29,7 @@ I learnt the hard way that if the second core doesn't fully exit from running, t
 
 As such, the code that I've recently pushed to the HelmHUD repo is a version that has a (slightly) more graceful shutdown of the second thread. It still acts up however, and for now I would still recommend disconnecting the OLED display as a stopgap measure to prevent the IDEs from freezing up, but at the very least I am receiving visual confirmation in the terminal that the second thread is being stopped and restarted under the control of the main thread.
 
-![IT LIIIIIIIIIIIVES.](../../../assets/20240620_200015.jpg)
+![IT LIIIIIIIIIIIVES.](../../../assets/images/20240620_200015.jpg)
 
 It only took two hours to realize that. *Only.*
 

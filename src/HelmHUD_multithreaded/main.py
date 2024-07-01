@@ -119,6 +119,8 @@ def background_thread():
     
     print("Second thread successfully started.")
     temp_device = find_sensors("HH_Temp")
+    hr_device = find_sensors("HelmHUD_HeartRate")
+    
     print("Second thread phase 2")
     screen2_row2 = 'TEST'
     screen2 = [[0, 0 , screen1_row1], [0, 10, screen2_row2], [0, 20, screen1_row3]]
@@ -128,12 +130,22 @@ def background_thread():
     OLED_SSD1306.scroll_screen_in_out(screen2)
     lock.release()
     
+    while True:
+        if hr_device and hr_device.is_connected():
+            heart_rate = hr_device.read()  # Implement reading logic here
+            print("Heart Rate:", heart_rate)
+            # Update display with heart rate
+            lock.acquire()
+            OLED_SSD1306.scroll_screen_in_out([[0, 0, 'Heart Rate'], [0, 10, str(heart_rate)]])
+            lock.release()
+    
     thread1_complete = True
     
     if(thread1_exit):
         print("Exiting thread 1.")
         _thread.exit()
         print("This shouldn't ever be printed!")
+
     
     #while True:
     #    time.sleep(10)

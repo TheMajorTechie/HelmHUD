@@ -14,11 +14,12 @@
 # This driver aims at giving almost full access to Maxim MAX30102 functionalities.
 #                                                                          n-elia
 
+from machine import I2C
 from machine import SoftI2C
 from ustruct import unpack
 from utime import sleep_ms, ticks_diff, ticks_ms
 
-from max30102.circular_buffer import CircularBuffer
+from lib.max30102.circular_buffer import CircularBuffer
 
 # I2C address (7-bit address)
 MAX3010X_I2C_ADDRESS = 0x57  # Right-shift of 0xAE, 0xAF
@@ -167,7 +168,7 @@ class SensorData:
 # Sensor class
 class MAX30102(object):
     def __init__(self,
-                 i2c: SoftI2C,
+                 i2c: SoftI2C | I2C,                                  #modify library to allow the use of either SoftI2C or I2C
                  i2c_hex_address=MAX3010X_I2C_ADDRESS,
                  ):
         self.i2c_address = i2c_hex_address

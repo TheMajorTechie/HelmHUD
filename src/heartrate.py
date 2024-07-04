@@ -1,7 +1,7 @@
 import machine
 import time
-import ssd1306
-from max30102 import MAX30102
+import lib.ssd1306 as ssd1306
+from lib.max30102 import MAX30102
 import array
 
 # Initialize I2C for MAX30102 and OLED

@@ -1,22 +1,43 @@
+import collections
 import machine
 import time
-import lib.ssd1306 as ssd1306
-from lib.max30102 import MAX30102
+import ssd1306 as ssd1306
+from max30102 import MAX30102, MAX30105_PULSE_AMP_MEDIUM
 import array
 
-# Initialize I2C for MAX30102 and OLED
-i2c = machine.I2C(0, sda=machine.Pin(4), scl=machine.Pin(5))
-sensor = MAX30102(i2c=i2c)
-oled = ssd1306.SSD1306_I2C(128, 64, i2c)
+i2c_central = machine.I2C(1, scl=machine.Pin(27), sda=machine.Pin(26))
+i2c_display = machine.I2C(0, scl=machine.Pin(5), sda=machine.Pin(4))
+sensor = MAX30102(i2c_central)
+sensor.setup_sensor()
+sensor.set_sample_rate(400)         #400 samples are taken per second.
+sensor.set_fifo_average(8)
+# Set LED brightness to a medium value
+sensor.set_active_leds_amplitude(MAX30105_PULSE_AMP_MEDIUM)
+oled_width = 128
+oled_height = 32
+oled = ssd1306.SSD1306_I2C(oled_width, oled_height, i2c_display)
+
+# def read_heart_rate():
+#     ir_buffer = array.array('I', [0]*100)  # Buffer to store IR values
+#     while True:
+#         sensor.check()
+#         if sensor.available():
+#             red, ir = sensor.pop_red_from_storage(), sensor.pop_ir_from_storage()
+#             ir_buffer.append(ir)
+#             ir_buffer.pop(0)
+#             heart_rate = calculate_heart_rate(ir_buffer)  # Calculate heart rate from the buffer
+#             if heart_rate:
+#                 yield heart_rate
 
 def read_heart_rate():
     ir_buffer = array.array('I', [0]*100)  # Buffer to store IR values
+    buffer_index = 0
     while True:
         sensor.check()
         if sensor.available():
             red, ir = sensor.pop_red_from_storage(), sensor.pop_ir_from_storage()
-            ir_buffer.append(ir)
-            ir_buffer.pop(0)
+            ir_buffer[buffer_index] = ir
+            buffer_index = (buffer_index + 1) % 100
             heart_rate = calculate_heart_rate(ir_buffer)  # Calculate heart rate from the buffer
             if heart_rate:
                 yield heart_rate

@@ -46,7 +46,7 @@ def detect_heartbeat(raw_values_array):
     peaks = list()
 
     for i in range(1, len(raw_values_array) - 1):
-        if (raw_values_array[i] - raw_values_array[i-1]) > 100:   #detect rising edge
+        if (raw_values_array[i] - raw_values_array[i-1]) > 25:   #detect rising edge
             rise = True
             #print("RISE: ", i)
         if (raw_values_array[i + 1] - raw_values_array[i]) > 10: #detect falling edge

@@ -1,8 +1,8 @@
 import collections
 import machine
 import time
-#import lib.ssd1306 as ssd1306
-from lib.max30102 import MAX30102, MAX30105_PULSE_AMP_MEDIUM, MAX30105_PULSE_AMP_HIGH
+import ssd1306 as ssd1306
+from max30102 import MAX30102, MAX30105_PULSE_AMP_MEDIUM
 import array
 from machine import Timer
 
@@ -41,20 +41,18 @@ def get_raw_value():
                 if(ir_reading != 0):
                     break
         return ir_reading
-    else:
-        return 0
     
-def detect_heartbeat(raw_values_array):
+def detect_heartbreat(raw_values_array):
     rise = False
     fall = False
 
     peaks = list()
 
     for i in range(1, len(raw_values_array) - 1):
-        if (raw_values_array[i] - raw_values_array[i-1]) > 100:   #detect rising edge
+        if (raw_values_array[i] - raw_values_array[i-1]) > 10:   #detect rising edge
             rise = True
             #print("RISE: ", i)
-        if (raw_values_array[i + 1] - raw_values_array[i]) > 10: #detect falling edge
+        if (raw_values_array[i + 1] - raw_values_array[i] > 10): #detect falling edge
             fall = True
             #print("FALL: ", i)
         # if (raw_values_array[i] == raw_values_array[i-1]) or (raw_values_array[i] == raw_values_array[i+1]):
@@ -199,7 +197,7 @@ def CalculateBPM_handler(timer):
     print(buffer)
     
     #detect potential heartbeats and sanitize the output to remove non-hearbeat-like structures
-    peaks = detect_heartbeat(buffer)
+    peaks = detect_heartbreat(buffer)
     
     for i in range(0, len(peaks)):
         buffer[peaks[i]] = 65536
@@ -207,27 +205,11 @@ def CalculateBPM_handler(timer):
     print("POST PEAK DETECTION: ")
     print(buffer)
 
-    #further filter the peak detection data
-    peakdetected = False
-    peakcount = 0
-    for i in range(1, len(buffer)):
-        if buffer[i-1] == 65536:
-            peakdetected = True
-        if (peakdetected) and (buffer[i] != 65536):
-            peakdetected = False
-            peakcount += 1
-
-    print("Peaks in 10s: ", peakcount)
-    print("BPM: ", peakcount * 6)
     print("\n\n\n")
 
-    return
     
 
-
-
-if __name__ == "__main__":
-    soft_timer = Timer(mode=Timer.PERIODIC, period=10000, callback=CalculateBPM_handler)
-
-    while True:
-        GetRawValues(buffer)
+while True:
+    #print(get_raw_value())
+    #time.sleep_us(25000)
+    filter_raw_values()

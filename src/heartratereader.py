@@ -41,6 +41,7 @@ def get_raw_value():
                 if(ir_reading != 0):
                     break
         return ir_reading
+    return 0
     
 def detect_heartbreat(raw_values_array):
     rise = False
@@ -212,4 +213,16 @@ def CalculateBPM_handler(timer):
 while True:
     #print(get_raw_value())
     #time.sleep_us(25000)
-    filter_raw_values()
+    #filter_raw_values(buffer)
+    print("Test")
+    sensor.wakeup()
+    sensor.check()
+
+    # if sensor.available():
+    #     return int(sensor.pop_ir_from_storage())
+    if sensor.available():
+        print("Running")
+        # Access the storage FIFO and gather the readings (integers)
+        print(sensor.pop_ir_from_storage())
+
+    time.sleep(1)

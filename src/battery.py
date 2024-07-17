@@ -2,7 +2,7 @@ import machine
 import time
 import lib.ssd1306 as ssd1306
 
-# Set up ADC pin (GP26 is ADC0)
+# Set up ADC pin (GP26 is ADC0) (For voltage checking method)
 # adc = machine.ADC(machine.Pin(26))
 
 # Set up I2C for OLED
@@ -16,8 +16,21 @@ oled = ssd1306.SSD1306_I2C(oled_width, oled_height, i2c_display)
 # Set True for vertical, False for horizontal
 ORIENTATION = True
 
-# Horizontal Battery symbol with 3 bars
-HORIZ_FULL = [
+def draw_symbol(oled, symbol):
+    oled.fill(0)
+    for y, row in enumerate(symbol):
+        for x, pixel in enumerate(row):
+            if ORIENTATION:
+                oled.pixel(x + 123, y, pixel)  # Vertical Battery Position
+            else:
+                oled.pixel(x + 112, y, pixel)  # Horizontal Battery Position
+    oled.show()
+
+# Initialize with 3 bars
+battery_bars = 3
+start_time = time.time()
+
+HORIZ_FULL = [ # Horizontal Battery symbol with 3 bars
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
     [1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0],
     [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
@@ -26,8 +39,7 @@ HORIZ_FULL = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
 ]
 
-# Horizontal Battery symbol with 2 bars
-HORIZ_MED = [
+HORIZ_MED = [ # Horizontal Battery symbol with 2 bars
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
     [1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0],
     [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
@@ -36,8 +48,7 @@ HORIZ_MED = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
 ]
 
-# Horizontal Battery symbol with 1 bar
-HORIZ_LOW = [
+HORIZ_LOW = [ # Horizontal Battery symbol with 1 bar
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
     [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
@@ -46,8 +57,7 @@ HORIZ_LOW = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
 ]
 
-# Horizontal Empty Battery Symbol
-HORIZ_EMPTY = [
+HORIZ_EMPTY = [ # Horizontal Empty Battery Symbol
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
@@ -56,8 +66,7 @@ HORIZ_EMPTY = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
 ]
 
-# Vertical Battery symbol with three bars
-VERT_FULL = [
+VERT_FULL = [ # Vertical Battery symbol with three bars
     [0, 0, 1, 0, 0],
     [1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1],
@@ -74,8 +83,7 @@ VERT_FULL = [
     [1, 1, 1, 1, 1],
 ]
 
-# Vertical Battery symbol with 2 bars
-VERT_MED = [
+VERT_MED = [ # Vertical Battery symbol with 2 bars
     [0, 0, 1, 0, 0],
     [1, 1, 1, 1, 1],
     [1, 0, 0, 0, 1],
@@ -92,8 +100,7 @@ VERT_MED = [
     [1, 1, 1, 1, 1],
 ]
 
-# Vertical Battery symbol with 1 bar
-VERT_LOW = [
+VERT_LOW = [ # Vertical Battery symbol with 1 bar
     [0, 0, 1, 0, 0],
     [1, 1, 1, 1, 1],
     [1, 0, 0, 0, 1],
@@ -110,8 +117,7 @@ VERT_LOW = [
     [1, 1, 1, 1, 1],
 ]
 
-# Vertical Empty Battery symbol
-VERT_EMPTY = [
+VERT_EMPTY = [ # Vertical Empty Battery symbol
     [0, 0, 1, 0, 0],
     [1, 1, 1, 1, 1],
     [1, 0, 0, 0, 1],
@@ -127,21 +133,6 @@ VERT_EMPTY = [
     [1, 0, 0, 0, 1],
     [1, 1, 1, 1, 1],
 ]
-
-# Function to draw a symbol on the OLED
-def draw_symbol(oled, symbol):
-    oled.fill(0)  # Clear the screen
-    for y, row in enumerate(symbol):
-        for x, pixel in enumerate(row):
-            if ORIENTATION:
-                oled.pixel(x + 123, y, pixel)  # Adjust position as needed for vertical
-            else:
-                oled.pixel(x + 112, y, pixel)  # Adjust position as needed for horizontal
-    oled.show()
-
-# Initialize with 3 bars
-battery_bars = 3
-start_time = time.time()
 
 while True:
     current_time = time.time()

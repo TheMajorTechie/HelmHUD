@@ -6,7 +6,8 @@ import lib.ssd1306 as ssd1306
 from lib.max30102 import MAX30102
 import array
 import math
-import heartratereader
+from src.hr import heartrate as hr
+import asyncio
 
 #==========================================================
 
@@ -64,8 +65,7 @@ def setup():
     else:
         for device in devices:
             if hex(device) == hex(HEARTRATE_ADDR):           #detect if a device is the heartrate monitor
-                heartrate = MAX30102(i2c_central)
-                heartratereader.setup_sensor()
+                heartrate = hr(i2c_central)
                 print("Heart rate sensor found!")
 
             oled.text('', 0, 10)
@@ -77,7 +77,7 @@ def setup():
 #now poll the devices that were scanned. This function will eventually be used for grabbing data from sensors.
 async def poll_sensors():
     print("Pretend this is some very neato data lol")
-    await hr_reader()
+    print(heartrate.process_values())
 
 #a helper function for scrolling text on the SSD1306 screen.
 def scroll_display(screen):
@@ -87,10 +87,6 @@ def scroll_display(screen):
         oled.show()
         if i != oled_width:
             oled.fill(0)
-
-async def hr_reader():
-    while True:
-        heartratereader.main()
 
 #===============================================MAIN CORE FUNCTIONS=============================
 
@@ -127,4 +123,15 @@ lock = _thread.allocate_lock()
 sleep(5)
 print("Starting.")
 
-core0_main()
+#core0_main()
+
+async def main():
+    print("Setting up")
+    setup()
+    heartrate.get_readings()
+    print(heartrate.process_values())
+    
+
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())

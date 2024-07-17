@@ -7,6 +7,8 @@ import array
 from machine import Timer
 import asyncio
 
+
+
 i2c_central = machine.I2C(1, scl=machine.Pin(27), sda=machine.Pin(26))
 i2c_display = machine.I2C(0, scl=machine.Pin(5), sda=machine.Pin(4))
 
@@ -23,6 +25,27 @@ sensor.shutdown()
 #oled = ssd1306.SSD1306_I2C(oled_width, oled_height, i2c_display)
 
 buffer = collections.deque((), 400)
+
+def setup_sensor():
+    global sensor
+    global i2c_central
+    global buffer
+    
+    i2c_central = machine.I2C(1, scl=machine.Pin(27), sda=machine.Pin(26))
+
+    sensor = MAX30102(i2c_central)
+    sensor.setup_sensor()
+    sensor.set_sample_rate(400)         #400 samples are taken per second (2500 us)
+    sensor.set_fifo_average(8)
+
+    # Set LED brightness to a medium value
+    sensor.set_active_leds_amplitude(MAX30105_PULSE_AMP_MEDIUM)
+    sensor.shutdown()
+    #oled_width = 128
+    #oled_height = 32
+    #oled = ssd1306.SSD1306_I2C(oled_width, oled_height, i2c_display)
+
+    buffer = collections.deque((), 400)
 
 def get_raw_value():
     sensor.check()

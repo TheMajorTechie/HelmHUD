@@ -6,6 +6,7 @@ import lib.ssd1306 as ssd1306
 from lib.max30102 import MAX30102
 import array
 import math
+import heartratereader
 
 #==========================================================
 
@@ -64,7 +65,7 @@ def setup():
         for device in devices:
             if hex(device) == hex(HEARTRATE_ADDR):           #detect if a device is the heartrate monitor
                 heartrate = MAX30102(i2c_central)
-                heartrate.setup_sensor()
+                heartratereader.setup_sensor()
                 print("Heart rate sensor found!")
 
             oled.text('', 0, 10)
@@ -74,16 +75,9 @@ def setup():
     print("Finished polling devices.")
 
 #now poll the devices that were scanned. This function will eventually be used for grabbing data from sensors.
-def poll_sensors():
+async def poll_sensors():
     print("Pretend this is some very neato data lol")
-    hr_gen = read_heart_rate()
-    while(True):
-        try:
-            heart_rate = next(hr_gen)
-            print("Heart Rate:", heart_rate)
-        except StopIteration:
-            break
-        sleep(5)
+    await hr_reader()
 
 #a helper function for scrolling text on the SSD1306 screen.
 def scroll_display(screen):
@@ -94,48 +88,9 @@ def scroll_display(screen):
         if i != oled_width:
             oled.fill(0)
 
-def read_heart_rate():
-    ir_buffer = collections.deque((), 100)   #use a double-ended queue since it supports push and pop
+async def hr_reader():
     while True:
-        #red, ir = heartrate.pop_red_from_storage, heartrate.pop_ir_from_storage
-        ir = heartrate.pop_ir_from_storage
-        ir_buffer.append(ir)
-        heart_rate = calculate_heart_rate(ir_buffer)
-        if heart_rate:
-            yield heart_rate
-
-# def read_heart_rate():
-#     ir_buffer = array.array('I', [0]*100)  # Buffer to store IR values
-#     while True:
-#         #red, ir = heartrate.read_sequential()  # Read data from the sensor
-        
-#         ir = heartrate.pop_ir_from_storage()
-#         ir_buffer.append(ir)
-#         ir_buffer.pop(0)
-#         heart_rate = calculate_heart_rate(ir_buffer)  # Calculate heart rate from the buffer
-#         if heart_rate:
-#             yield heart_rate
-
-def calculate_heart_rate(ir_values):
-    # Simple peak detection algorithm
-    peaks = detect_peaks(ir_values)
-    if len(peaks) >= 2:
-        peak_intervals = []
-        for i in range(1, len(peaks)):
-            peak_intervals.append(peaks[i] - peaks[i-1])
-        avg_peak_interval = sum(peak_intervals) / len(peak_intervals)
-        heart_rate = 60 / (avg_peak_interval * 0.02)  # Convert to BPM (assuming 20ms interval between samples)
-        return int(heart_rate)
-    return None
-
-def detect_peaks(data):
-    maxOfData = max(data)
-    threshold = maxOfData * 0.6  # 60% of the max value
-    peaks = []
-    for i in range(1, len(data) - 1):
-        if data[i-1] < data[i] > data[i+1] and data[i] > threshold:
-            peaks.append(i)
-    return peaks
+        heartratereader.main()
 
 #===============================================MAIN CORE FUNCTIONS=============================
 
@@ -151,17 +106,18 @@ def core0_main():
     lock.acquire()
     scroll_display(screen2)
     lock.release()
+    print("Starting second thread")
     second_thread = _thread.start_new_thread(core1_main, ())
     sleep(5)
 
 #the main method running on core 1.
-def core1_main():
+async def core1_main():
     global lock
     print("Core 1 main function")
     lock.acquire()
     setup()
     lock.release()
-    poll_sensors()
+    await poll_sensors()
     _thread.exit()
         
 #===========================================================

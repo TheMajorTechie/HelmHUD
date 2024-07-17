@@ -1,9 +1,13 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 import time
+import MPU925x #Gyroscope/Acceleration/Magnetometer
+import BME280   #Atmospheric Pressure/Temperature and humidity
+import LTR390   #UV
+import TSL2591  #LIGHT
+import SGP40
+import VOC_Algorithm
 import math
-from lib.env import MPU925x, BME280, LTR390, TSL2591, SGP40
-import VOC_Algorithm # For some reason needs to be in root directory, doesnt work in a folder
 
 from machine import Pin, I2C
 i2c = I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)
@@ -24,17 +28,19 @@ else:
 for device in devices:
     print("Hexa address: ",hex(device))
 
-bme280 = BME280.BME280() #Atmospheric Pressure/Temperature and humidity
+
+
+bme280 = BME280.BME280()
 bme280.get_calib_param()
-light = TSL2591.TSL2591() #LIGHT
-sgp = SGP40.SGP40() #Gas/O2 Concentration
+light = TSL2591.TSL2591()
+sgp = SGP40.SGP40()
 voc_sgp = VOC_Algorithm.VOC_Algorithm()
-uv = LTR390.LTR390() #UV
-mpu = MPU925x.MPU925x() #Gyroscope/Acceleration/Magnetometer
+uv = LTR390.LTR390()
+mpu = MPU925x.MPU925x()
 
 try:
     while True:
-        time.sleep(1)
+#   time.sleep(1)
         bme = []
         bme = bme280.readData()
         pressure = round(bme[0], 2) 
@@ -55,12 +61,16 @@ try:
         print("temp : %-6.2f ℃" %temp)
         print("hum : %6.2f ％" %hum)
         print("lux : %d " %lux)
-        print("uv  : %d " %uvs)
+        print("uv : %d " %uvs)
         print("gas : %6.2f " %gas)
         print("VOC : %d " %voc)
         print("Acceleration: X = %d, Y = %d, Z = %d" %(icm[0],icm[1],icm[2]))
-        print("Gyroscope:    X = %d , Y = %d , Z = %d" %(icm[3],icm[4],icm[5]))
-        print("Magnetic:     X = %d , Y = %d , Z = %d" %(icm[6],icm[7],icm[8]))
+        print("Gyroscope:     X = %d , Y = %d , Z = %d" %(icm[3],icm[4],icm[5]))
+        print("Magnetic:      X = %d , Y = %d , Z = %d" %(icm[6],icm[7],icm[8]))
         
 except KeyboardInterrupt:
     exit()
+
+
+
+

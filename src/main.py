@@ -18,25 +18,24 @@ global_path = 0         #functions that write to global_path need to use
 device_id = 0           #the device ID for the central pi pico is and will always be 0.
 device_polling = 0      #the device ID for the current device being polled.
 
-#I2C addresses for devices are as follows:
+# I2C addresses for devices are as follows:
 TEMPERATURE_ADDR = 0x10
 POWER_ADDR = 0x11
 HUMIDITY_ADDR = 0x12
-LIGHT_ADDR = 0x29 #TSL25911FN
-UV_ADDR = 0x53  #LTR390-UV-1
+LIGHT_ADDR = 0x29  # TSL25911FN
+UV_ADDR = 0x53    # LTR390-UV-1
 HEARTRATE_ADDR = 0x57
-#heartrate = ""
-GAS_ADDR = 0x59 #SGP40
-GYRO_ADDR = 0x68 #MPU9250
+GAS_ADDR = 0x59   # SGP40
+GYRO_ADDR = 0x68  # MPU9250
 WSTEMP_ADDR = 0x76
 DIRECTION_ADDR = 0x14
 
-#set up I2C for sensor peripherals on the I2C1 bus. The display is located on I2C0.
+# Set up I2C for sensor peripherals on the I2C1 bus. The display is located on I2C0.
 i2c_display = machine.I2C(0, scl=machine.Pin(5), sda=machine.Pin(4))
 i2c_central = machine.I2C(1, scl=machine.Pin(27), sda=machine.Pin(26))
-devices = {}            #this set contains the addresses of each device connected
+devices = {}  # This set contains the addresses of each device connected
 
-#set up OLED display
+# Set up OLED display
 oled_width = 128
 oled_height = 32
 oled = ssd1306.SSD1306_I2C(oled_width, oled_height, i2c_display)
@@ -45,11 +44,11 @@ oled.text('Sensor', 0, 10)
 oled.text('Collator', 0, 20)
 oled.show()
 
-#a basic default "screen" to display.
+# A basic default "screen" to display.
 screen1_row1 = 'No'
 screen1_row2 = 'Devices'
 screen1_row3 = 'Found'
-screen1 = [[0,0, screen1_row1], [0,10, screen1_row2], [0,20, screen1_row3]]
+screen1 = [[0, 0, screen1_row1], [0, 10, screen1_row2], [0, 20, screen1_row3]]
 
 #============================================UTILITY FUNCTIONS==========================
 
@@ -74,22 +73,22 @@ def setup():
         scroll_display(screen1)
     else:
         for device in devices:
-            if hex(device) == hex(HEARTRATE_ADDR): #detect if a device is the heartrate monitor
+            if device == HEARTRATE_ADDR:  # Detect if a device is the heart rate monitor
                 heartrate = hr(i2c_central)
                 print("Heart rate sensor found!")
-            elif hex(device) == hex(WSTEMP_ADDR):
+            elif device == WSTEMP_ADDR:
                 temp_sensor = TempSensor(i2c_central)
                 print("Temperature sensor found!")
-            elif hex(device) == hex(LIGHT_ADDR):
+            elif device == LIGHT_ADDR:
                 light_sensor = LightSensor(i2c_central)
                 print("Light sensor found!")
-            elif hex(device) == hex(UV_ADDR):
+            elif device == UV_ADDR:
                 uv_sensor = UVSensor(i2c_central)
                 print("UV sensor found!")
-            elif hex(device) == hex(GAS_ADDR):
+            elif device == GAS_ADDR:
                 gas_sensor = GasSensor(i2c_central)
                 print("Gas sensor found!")
-            elif hex(device) == hex(GYRO_ADDR):
+            elif device == GYRO_ADDR:
                 gyro_sensor = Gyroscope(i2c_central)
                 print("Gyroscope sensor found!")
 

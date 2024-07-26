@@ -2,12 +2,12 @@
 # -*- coding:utf-8 -*-
 import time
 from machine import Pin, I2C
-from lib.env import MPU925x as Gyroscope, BME280 as TempSensor, LTR390 as UVSensor, TSL2591 as LightSensor, SGP40 as GasSensor
+from lib.env import BME280, TSL2591, LTR390, SGP40, MPU925x
 import VOC_Algorithm
 
 class TempSensor:  # Atmospheric Pressure/Temperature and humidity
     def __init__(self, i2c):
-        self.sensor = TempSensor.BME280(i2c)
+        self.sensor = BME280.BME280(i2c)
         self.sensor.get_calib_param()
     
     def read_data(self):
@@ -20,7 +20,7 @@ class TempSensor:  # Atmospheric Pressure/Temperature and humidity
 
 class LightSensor:  # LIGHT
     def __init__(self, i2c):
-        self.sensor = LightSensor.TSL2591(i2c)
+        self.sensor = TSL2591.TSL2591(i2c)
     
     def read_data(self):
         return {
@@ -29,7 +29,7 @@ class LightSensor:  # LIGHT
 
 class UVSensor:  # UV
     def __init__(self, i2c):
-        self.sensor = UVSensor.LTR390(i2c)
+        self.sensor = LTR390.LTR390(i2c)
     
     def read_data(self):
         return {
@@ -38,7 +38,7 @@ class UVSensor:  # UV
 
 class GasSensor:  # Gas/O2 Concentration
     def __init__(self, i2c):
-        self.sensor = GasSensor.SGP40(i2c)
+        self.sensor = SGP40.SGP40(i2c)
         self.voc_sgp = VOC_Algorithm.VOC_Algorithm()
     
     def read_data(self, temperature, humidity):
@@ -51,7 +51,7 @@ class GasSensor:  # Gas/O2 Concentration
 
 class Gyroscope:  # Gyroscope/Acceleration/Magnetometer
     def __init__(self, i2c):
-        self.sensor = Gyroscope.MPU925x(i2c)
+        self.sensor = MPU925x.MPU925x(i2c)
     
     def read_data(self):
         icm = self.sensor.ReadAll()

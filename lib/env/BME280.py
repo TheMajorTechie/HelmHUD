@@ -1,4 +1,4 @@
-from machine import Pin, I2C, SoftI2C
+from machine import Pin, I2C
 import time
 I2C_ADDR = 0x76
 

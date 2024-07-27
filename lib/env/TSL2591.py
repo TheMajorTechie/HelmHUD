@@ -1,6 +1,6 @@
 import time
 import math
-from machine import Pin, I2C, SoftI2C
+from machine import Pin, I2C
 
 ADDR                = (0x29)
 

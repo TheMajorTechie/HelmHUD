@@ -40,8 +40,8 @@ GAIN_18 = (0x4)
 
 
 class LTR390:
-    def __init__(self, address=ADDR):
-        self.i2c = I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)
+    def __init__(self, i2c: I2C=I2C(0, scl=Pin(21), sda=Pin(20), freq=400000), address=ADDR):
+        self.i2c = i2c #I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)
         self.address = address
 
         self.ID = self.Read_Byte(LTR390_PART_ID)

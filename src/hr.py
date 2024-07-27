@@ -72,8 +72,10 @@ class heartrate:
         peaks = list()
 
         for i in range(1, len(raw_values_array) - 1):
-            rise = (raw_values_array[i] - raw_values_array[i-1]) > 75   #detect rising edge
-            fall = (raw_values_array[i + 1] - raw_values_array[i]) > 30 #detect falling edge
+            if (raw_values_array[i] - raw_values_array[i-1]) > 75:   #detect rising edge
+                rise = True
+            if (raw_values_array[i + 1] - raw_values_array[i]) > 30: #detect falling edge
+                fall = True
             if (rise == True) and (fall == True):
                 rise, fall = False, False
                 peaks.append(i)
@@ -101,10 +103,11 @@ class heartrate:
                 peakdetected = False
                 peakcount += 1
         bpm = (peakcount * 6)
-        return (bpm)
+        return (peakcount * 6)
     
     async def run(self):
         global bpm
         while True:
             self.get_readings()
             bpm = self.process_values()
+    

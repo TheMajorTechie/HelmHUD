@@ -20,7 +20,9 @@ class TempSensor:  # Atmospheric Pressure/Temperature and humidity
 
 class LightSensor:  # LIGHT
     def __init__(self, i2c):
-        self.sensor = TSL2591.TSL2591(i2c)
+        print("Running")
+        self.sensor = LightSensor(i2c)
+        #self.sensor = LightSensor.TSL2591(i2c)
     
     def read_data(self):
         return {

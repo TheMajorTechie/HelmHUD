@@ -1,4 +1,4 @@
-from machine import Pin, I2C
+from machine import Pin, I2C, SoftI2C
 import time
 I2C_ADDR = 0x76
 
@@ -9,8 +9,8 @@ digH = []
 t_fine = 0.0
 
 class BME280:
-    def __init__(self, address = I2C_ADDR):
-        self.i2c = I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)
+    def __init__(self, i2c: I2C=I2C(0, scl=Pin(21), sda=Pin(20), freq=400000), address = I2C_ADDR):
+        self.i2c = i2c #I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)
         self.address = address
         
         self.calib = []

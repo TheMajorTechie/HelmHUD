@@ -3,6 +3,7 @@
 import time
 from machine import Pin, I2C
 from lib.env import BME280, TSL2591, LTR390, SGP40, MPU925x
+from lib.micropython_mpl3115a2 import mpl3115a2
 import VOC_Algorithm
 
 class TempSensor:  # Atmospheric Pressure/Temperature and humidity
@@ -61,4 +62,18 @@ class Gyroscope:  # Gyroscope/Acceleration/Magnetometer
             "acceleration": icm[:3],
             "gyroscope": icm[3:6],
             "magnetic": icm[6:9]
+        }
+
+class MPLSensor: #MPL3115A2 Temperature/Pressure/Altitude Sensor
+    def __init__(self, i2c):
+        self.sensor = mpl3115a2.MPL3115A2(i2c)
+        
+    def read_data(self):
+        pressure = sensor.pressure
+        altitude = sensor.altitude
+        temperature = sensor.temperature
+        return {
+            "Pressure: {0:0.3f} hectopascals".format(pressure),
+            "Altitude: {0:0.3f} meters".format(altitude),
+            "Temperature: {0:0.3f} Celsius".format(temperature)
         }

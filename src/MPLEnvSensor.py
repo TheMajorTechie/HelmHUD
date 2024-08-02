@@ -1,6 +1,6 @@
 import time
 
-from micropython_mpl3115a2 import mpl3115a2
+from lib.micropython_mpl3115a2 import mpl3115a2
 
 from machine import Pin, I2C
 i2c = I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)

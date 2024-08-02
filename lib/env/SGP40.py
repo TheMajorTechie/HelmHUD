@@ -39,8 +39,8 @@ WITH_HUM_COMP = [0x26, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00] #Manual input
 ADDR = 0x59
 
 class SGP40:
-    def __init__(self, address=ADDR):
-        self.i2c = I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)
+    def __init__(self, i2c: I2C=I2C(0, scl=Pin(21), sda=Pin(20), freq=400000), address=ADDR):
+        self.i2c = i2c #I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)
         self.address = address
         
         # feature set 0x3220

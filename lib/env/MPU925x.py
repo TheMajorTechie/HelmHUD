@@ -4,6 +4,7 @@
 import time
 from machine import Pin, I2C
 import math
+import sys
 
 ADDR    = (0x68)
 
@@ -37,8 +38,8 @@ MPU9250_ID = 0x71
 # INI_PIN = 23
 
 class MPU925x:
-    def __init__(self, address=ADDR):
-        self.bus = I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)
+    def __init__(self, i2c: I2C=I2C(0, scl=Pin(21), sda=Pin(20), freq=400000), address=ADDR):
+        self.bus = i2c #I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)
         self.address = address
 
         self.ID = self.Read_Byte(MPU925x_REG_ID)

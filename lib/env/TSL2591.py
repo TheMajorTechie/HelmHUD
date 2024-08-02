@@ -1,6 +1,6 @@
 import time
 import math
-from machine import Pin, I2C
+from machine import Pin, I2C, SoftI2C
 
 ADDR                = (0x29)
 
@@ -77,8 +77,8 @@ MAX_COUNT_100MS     = (36863) # 0x8FFF
 MAX_COUNT           = (65535) # 0xFFFF
 
 class TSL2591:
-    def __init__(self, address=ADDR):
-        self.i2c = I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)
+    def __init__(self, i2c: I2C=I2C(0, scl=Pin(21), sda=Pin(20), freq=400000), address=ADDR):
+        self.i2c = i2c #I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)
         self.address = address
 
         self.ID = self.Read_Byte(ID_REGISTER)

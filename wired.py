@@ -1,9 +1,22 @@
 from lib.env import envsense_wrapper
+from lib.max30102 import heartrate_wrapper
+import lib.ssd1306 as ssd1306
 import machine
 
-i2c_central = machine.I2C(1, scl=machine.Pin(27), sda=machine.Pin(26))
+i2c_display = machine.I2C(0, scl=machine.Pin(5), sda=machine.Pin(4))
+oled_width = 128
+oled_height = 32
+oled = ssd1306.SSD1306_I2C(oled_width, oled_height, i2c_display)
+oled.text('HelmHUD', 0, 0)
+oled.text('Sensor', 0, 10)
+oled.text('Collator', 0, 20)
+oled.show()
 
+i2c_central = machine.I2C(1, scl=machine.Pin(27), sda=machine.Pin(26))
 envSensors = envsense_wrapper.EnvSenseWrapper(i2c_central)          #this is the central environmental sensor wrapper!
+heartSensor = heartrate_wrapper.heartrate(i2c_central)                #this is the heartrate reader sensor!
+
+
 
 #===============================================getting sensor readouts
 
@@ -21,6 +34,9 @@ gas = sgp[0]
 voc = sgp[1]
 icm = envSensors.read_out_9dof()
 
+heartSensor.get_readings()
+heartrate = heartSensor.process_values()
+
 #=============================================printing sensor readouts
 
 print("==================================================")
@@ -34,5 +50,6 @@ print("VOC : %d " %voc)
 print("Acceleration: X = %d, Y = %d, Z = %d" %(icm[0],icm[1],icm[2]))
 print("Gyroscope:     X = %d , Y = %d , Z = %d" %(icm[3],icm[4],icm[5]))
 print("Magnetic:      X = %d , Y = %d , Z = %d" %(icm[6],icm[7],icm[8]))
+print("Heart rate:  %d" %heartrate)
 
 print("Main.py finished execution!")

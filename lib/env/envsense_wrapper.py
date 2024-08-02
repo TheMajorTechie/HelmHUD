@@ -1,9 +1,9 @@
-import MPU925x  #Gyroscope/Acceleration/Magnetometer
-import BME280   #Atmospheric Pressure/Temperature and humidity
-import LTR390   #UV
-import TSL2591  #LIGHT
-import SGP40
-import VOC_Algorithm
+import lib.env.MPU925x as MPU925x #Gyroscope/Acceleration/Magnetometer
+import lib.env.BME280 as BME280  #Atmospheric Pressure/Temperature and humidity
+import lib.env.LTR390 as LTR390  #UV
+import lib.env.TSL2591 as TSL2591 #LIGHT
+import lib.env.SGP40 as SGP40
+import lib.env.VOC_Algorithm as VOC_Algorithm
 
 class EnvSenseWrapper:
     def __init__(self, i2c):

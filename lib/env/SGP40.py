@@ -3,7 +3,7 @@ import math
 import struct
 from machine import Pin, I2C
 
-import VOC_Algorithm
+import lib.env.VOC_Algorithm as VOC_Algorithm
 
 
 SGP40_CMD_FEATURE_SET = [0x20, 0x2F]

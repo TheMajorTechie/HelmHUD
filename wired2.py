@@ -1,4 +1,4 @@
-# from lib.env import envsense_wrapper
+# from lib.env import envsense_wrapper      #something's up with envsense and the ssd1306 display will not work if envsense_wrapper is even imported.
 from lib.max30102 import heartrate_wrapper
 import lib.ssd1306 as ssd1306
 import machine

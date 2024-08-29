@@ -4,6 +4,8 @@
 # applications, we recommend using the higher-level aioble library which takes
 # care of all IRQ handling and connection management. See
 # https://github.com/micropython/micropython-lib/tree/master/micropython/bluetooth/aioble
+# Modified from https://github.com/raspberrypi/pico-micropython-examples/blob/master/bluetooth/picow_ble_temp_sensor.py
+# Further based on https://github.com/micropython/micropython/blob/master/examples/bluetooth/ble_uart_peripheral.py
 
 import bluetooth
 import wired

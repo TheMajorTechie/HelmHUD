@@ -1,4 +1,5 @@
 # Helpers for generating BLE advertising payloads.
+# Lightly modified using code from https://github.com/raspberrypi/pico-micropython-examples/blob/master/bluetooth/ble_advertising.py
 
 from micropython import const
 import struct

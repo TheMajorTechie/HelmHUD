@@ -1,14 +1,6 @@
-# This example demonstrates a peripheral implementing the Nordic UART Service (NUS).
-
-# This example demonstrates the low-level bluetooth module. For most
-# applications, we recommend using the higher-level aioble library which takes
-# care of all IRQ handling and connection management. See
-# https://github.com/micropython/micropython-lib/tree/master/micropython/bluetooth/aioble
-# Modified from https://github.com/raspberrypi/pico-micropython-examples/blob/master/bluetooth/picow_ble_temp_sensor.py
-# Further based on https://www.raspberrypi.com/news/getting-to-grips-with-bluetooth-on-pico-w/
+# Adapted from https://github.com/micropython/micropython/blob/master/examples/bluetooth/ble_uart_peripheral.py
 
 import bluetooth
-import wired
 from lib.ble_advertising import advertising_payload
 
 from micropython import const
@@ -23,11 +15,11 @@ _FLAG_NOTIFY = const(0x0010)
 _UART_UUID = bluetooth.UUID("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
 _UART_TX = (
     bluetooth.UUID("6E400003-B5A3-F393-E0A9-E50E24DCCA9E"),
-    _FLAG_READ | _FLAG_NOTIFY,
+    _FLAG_NOTIFY,
 )
 _UART_RX = (
     bluetooth.UUID("6E400002-B5A3-F393-E0A9-E50E24DCCA9E"),
-    _FLAG_WRITE | _FLAG_WRITE_NO_RESPONSE,
+    _FLAG_WRITE,
 )
 _UART_SERVICE = (
     _UART_UUID,
@@ -38,19 +30,16 @@ _UART_SERVICE = (
 _ADV_APPEARANCE_GENERIC_COMPUTER = const(128)
 
 
-class BLEUART:
-    def __init__(self, ble, name="mpy-uart", rxbuf=100):
+class BLEUART:        
+    def __init__(self, ble, name="HH-uart", rxbuf=256):   #register BLE UART services
         self._ble = ble
         self._ble.active(True)
         self._ble.irq(self._irq)
         ((self._tx_handle, self._rx_handle),) = self._ble.gatts_register_services((_UART_SERVICE,))
-        # Increase the size of the rx buffer and enable append mode.
-        self._ble.gatts_set_buffer(self._rx_handle, rxbuf, True)
         self._connections = set()
-        self._rx_buffer = bytearray()
-        self._handler = None
-        # Optionally add services=[_UART_UUID], but this is likely to make the payload too large.
-        self._payload = advertising_payload(name=name, services=[_UART_UUID], appearance=_ADV_APPEARANCE_GENERIC_COMPUTER)
+        self._ble.config(mtu=256)							#increase the number of bytes that can be sent from the default of 20
+        self._write_callback = None
+        self._payload = advertising_payload(name=name, services=[_UART_UUID])
         self._advertise()
 
     def irq(self, handler):
@@ -99,23 +88,22 @@ class BLEUART:
 
 def demo():
     import time
-
     ble = bluetooth.BLE()
     uart = BLEUART(ble)
+    import wired
+    #a dummy sensor data payload terminated with a newline
+    sensorArray = [[813.79, 26.16, 23.84], 12.56, 0, [30779, 0], [-556, 144, -16168, 19, 70, 33, 9472, 36096, 56318], 0]
+    packedArray = str(sensorArray)+"\n"
 
     def on_rx():
         print("rx: ", uart.read().decode().strip())
 
     uart.irq(handler=on_rx)
-    nums = [4, 8, 15, 16, 23, 42]
-    i = 0
 
     try:
         while True:
-            uart.write(str(nums[i]) + "\n")
-            uart.write(str(wired.packedArray) + "\n")
-            i = (i + 1) % len(nums)
-            time.sleep_ms(1000)
+            uart.write(packedArray)
+            #uart.write(str(wired.bme))
     except KeyboardInterrupt:
         pass
 

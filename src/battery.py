@@ -5,16 +5,25 @@ import lib.ssd1306 as ssd1306
 # Set up ADC pin (GP26 is ADC0) (For voltage checking method)
 # adc = machine.ADC(machine.Pin(26))
 
-# Set up I2C for OLED
-i2c_display = machine.I2C(0, scl=machine.Pin(5), sda=machine.Pin(4))
-
-# Initialize OLED display
-oled_width = 128
-oled_height = 32
-oled = ssd1306.SSD1306_I2C(oled_width, oled_height, i2c_display)
-
 # Set True for vertical, False for horizontal
 ORIENTATION = True
+TRANSPARENT = True
+
+# Set up I2C for OLED (shared between both displays)
+i2c_display = machine.I2C(0, scl=machine.Pin(5), sda=machine.Pin(4), freq=400000)
+
+# Initialize OLED based on the `TRANSPARENT` flag
+if TRANSPARENT:
+    oled_width = 128
+    oled_height = 64  # Transparent OLED uses 128x64 resolution
+    oled_addr = 0x3D  # I2C address for SSD1309 display
+else:
+    oled_width = 128
+    oled_height = 32  # Old display uses 128x32 resolution
+    oled_addr = 0x3C  # I2C address for SSD1306 display
+# Initialize the OLED display with the selected address and dimensions
+oled = ssd1306.SSD1306_I2C(oled_width, oled_height, i2c_display, addr=oled_addr)
+
 
 def draw_symbol(oled, symbol):
     oled.fill(0)

@@ -7,7 +7,7 @@ from lib.max30102 import MAX30102
 import array
 import math
 from src.hr import heartrate as hr
-from src.pollenvsense import TempSensor, LightSensor, UVSensor, GasSensor, Gyroscope
+from src.pollenvsense import TempSensor, LightSensor, UVSensor, GasSensor, Gyroscope, MPLSensor
 import asyncio
 
 #==========================================================

@@ -38,7 +38,7 @@ heartrate = heartSensor.process_values()
 
 sensorArray = [bme, lux, uvs, sgp, icm, heartrate]
 
-packedArray = str(sensorArray)
+#packedArray = str(sensorArray)
 
 #=============================================printing sensor readouts
 
@@ -57,5 +57,5 @@ print("Heart rate:  %d" %heartrate)
 
 print("Main.py finished execution!")
 
-print("Final array:")
-print(packedArray)
+#print("Final array:")
+#print(packedArray)

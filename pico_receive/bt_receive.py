@@ -7,20 +7,12 @@
 # https://github.com/micropython/micropython-lib/tree/master/micropython/bluetooth/aioble
 
 import bluetooth
-import random
-import struct
 import time
-import micropython
-import aioble
 
 from ble_advertising import decode_services, decode_name
 
 from micropython import const
 
-_IRQ_CENTRAL_CONNECT = const(1)
-_IRQ_CENTRAL_DISCONNECT = const(2)
-_IRQ_GATTS_WRITE = const(3)
-_IRQ_GATTS_READ_REQUEST = const(4)
 _IRQ_SCAN_RESULT = const(5)
 _IRQ_SCAN_DONE = const(6)
 _IRQ_PERIPHERAL_CONNECT = const(7)
@@ -29,18 +21,11 @@ _IRQ_GATTC_SERVICE_RESULT = const(9)
 _IRQ_GATTC_SERVICE_DONE = const(10)
 _IRQ_GATTC_CHARACTERISTIC_RESULT = const(11)
 _IRQ_GATTC_CHARACTERISTIC_DONE = const(12)
-_IRQ_GATTC_DESCRIPTOR_RESULT = const(13)
-_IRQ_GATTC_DESCRIPTOR_DONE = const(14)
-_IRQ_GATTC_READ_RESULT = const(15)
-_IRQ_GATTC_READ_DONE = const(16)
 _IRQ_GATTC_WRITE_DONE = const(17)
 _IRQ_GATTC_NOTIFY = const(18)
-_IRQ_GATTC_INDICATE = const(19)
 
 _ADV_IND = const(0x00)
 _ADV_DIRECT_IND = const(0x01)
-_ADV_SCAN_IND = const(0x02)
-_ADV_NONCONN_IND = const(0x03)
 
 _UART_SERVICE_UUID = bluetooth.UUID("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
 _UART_RX_CHAR_UUID = bluetooth.UUID("6E400002-B5A3-F393-E0A9-E50E24DCCA9E")
@@ -211,28 +196,10 @@ class BLESimpleCentral:
         self._ble.gap_disconnect(self._conn_handle)
         self._reset()
 
-    # Send data over the UART
-    #def write(self, v, response=False):
-    #    if not self.is_connected():
-    #        return
-    #    self._ble.gattc_write(self._conn_handle, self._rx_handle, v, 1 if response else 0)
-
-    #def write(self, data):
-    #    for conn_handle in self._connections:
-    #        self._ble.gatts_notify(conn_handle, self._tx_handle, data)
-
     def write(self, v, response=False):
         if not self.is_connected():
             return
         self._ble.gattc_write(self._conn_handle, self._rx_handle, v, 1 if response else 0)
-
-#     # Read data over UART
-#     def read(self, sz=None):
-#         if not sz:
-#             sz = len(self._rx_buffer)
-#         result = self._rx_buffer[0:sz]
-#         self._rx_buffer = self._rx_buffer[sz:]
-#         return result
 
     # Set handler for when data is received over the UART.
     def on_notify(self, callback):
@@ -249,11 +216,10 @@ class BLESimpleCentral:
         for conn_handle in self._connections:
             self._ble.gatts_notify(conn_handle, self._handle_tx, data)
 
-def demo():
+def hhuart_receiver():
     ble = bluetooth.BLE()
     central = BLESimpleCentral(ble)
     
-
     not_found = False
 
     def on_scan(addr_type, addr, name):
@@ -271,37 +237,33 @@ def demo():
     while not central.is_connected():
         time.sleep_ms(100)
         if not_found:
-            return
+            time.sleep_ms(10000)
+            central.scan(callback=on_scan)
 
     print("Connected")
 
     def on_rx(v):
         print("RX", str(v, 'utf8'))
-        #print(str(central.read(), 'utf8'))
         
     central.on_notify(on_rx)
     
     with_response = False
 
     i = 0
-    while central.is_connected():
-        try:
-            #print("connected")
-            v = str(i) + "_"
-            print("TX", v)
-            central.write(v, with_response)
-            #v = str(i) + "_"
-            #print("TX", v)
-            #central.write(v)
-            #central.send("Test")
-            #print("Sent TX")
-        except Exception as tx_error:
-            print("TX failed: ", tx_error)
-        i += 1
-        time.sleep_ms(400) #if with_response else 30)
-
-    print("Disconnected")
-
+    
+    while True:
+        if central.is_connected():
+            try:
+                v = str(i) + "_"
+                print("TX", v)
+                central.write(v, with_response)
+            except Exception as tx_error:
+                print("TX failed: ", tx_error)
+            i += 1
+            time.sleep_ms(400) #if with_response else 30)
+        else:
+            time.sleep_ms(10000)
+            central.scan(callback=on_scan)    
 
 if __name__ == "__main__":
-    demo()
+    hhuart_receiver()

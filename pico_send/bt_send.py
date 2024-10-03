@@ -73,7 +73,7 @@ class BLEUART:
     def on_write(self, callback):
         self._write_callback = callback
 
-def hhuart():
+def hhuart_sender():
     import time
     ble = bluetooth.BLE()
     uart = BLEUART(ble)

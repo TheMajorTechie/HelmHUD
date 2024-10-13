@@ -77,7 +77,7 @@ def hhuart_sender():
     import time
     ble = bluetooth.BLE()
     uart = BLEUART(ble)
-    #import wired
+    import wired
     #a dummy sensor data payload terminated with a newline
     sensorArray = [[813.79, 26.16, 23.84], 12.56, 0, [30779, 0], [-556, 144, -16168, 19, 70, 33, 9472, 36096, 56318], 0]
     packedArray = str(sensorArray)+"\n"
@@ -85,15 +85,32 @@ def hhuart_sender():
     def on_rx(v):
         print("RECEIVED DATA")
         print("RX", v)
+        rq = v.decode('UTF-8')
+        if rq is "id":
+            uart.send("HelmHUD Sensor Unit")
+            
+        elif rq is "type":
+            uart.send("1")
+            
+        elif rq is "pressure":
+            uart.send(str(wired.pressure))
+            
+        elif rq is "temp":
+            uart.send(str(wired.temp))
+            
+        else:
+            print(rq)
+            uart.send(str("Unexpected request: ", rq))
         
     uart.on_write(on_rx)
 
     while True:
-        if uart.is_connected():
-            uart.send(packedArray)
+        #if uart.is_connected():
+            #uart.send(packedArray)
+            #print("asdf")
         time.sleep_ms(100)
 
     uart.close()
 
 if __name__ == "__main__":
-    hhuart()
+    hhuart_sender()

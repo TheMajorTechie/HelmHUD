@@ -48,6 +48,13 @@ _UART_SERVICE = (
     (_UART_TX, _UART_RX),
 )
 
+_SENSOR_TYPE_NONE = "0"		#default
+_SENSOR_TYPE_GENARRAY = "1"
+_SENSOR_TYPE_GPS = "2"
+
+connected_sensor_type = "0"
+current_command = "none"
+
 class BLESimpleCentral:
     def __init__(self, ble, rxbuf=100):
         self._ble = ble
@@ -217,6 +224,9 @@ class BLESimpleCentral:
             self._ble.gatts_notify(conn_handle, self._handle_tx, data)
 
 def hhuart_receiver():
+    global connected_sensor_type
+    global current_command
+    current_command = "none"
     ble = bluetooth.BLE()
     central = BLESimpleCentral(ble)
     
@@ -243,7 +253,18 @@ def hhuart_receiver():
     print("Connected")
 
     def on_rx(v):
-        print("RX", str(v, 'utf8'))
+        global connected_sensor_type, current_command
+        #print("RX", str(v, 'utf8'))
+        print(current_command)
+        if current_command == "type":
+            connected_sensor_type = str(v, 'utf8')
+            current_command = "none"
+            print("Current type now set to: ", connected_sensor_type)
+        elif current_command == "pressure":
+            print("Pressure: ", str(v, 'utf8'))
+            current_command = "none"
+        else:
+            print("Nothing to see here for now")
         
     central.on_notify(on_rx)
     
@@ -254,13 +275,28 @@ def hhuart_receiver():
     while True:
         if central.is_connected():
             try:
-                v = str(i) + "_"
-                print("TX", v)
-                central.write(v, with_response)
+                if connected_sensor_type is _SENSOR_TYPE_NONE:
+                    current_command = "type"
+                    central.write(current_command, with_response)
+                elif connected_sensor_type is _SENSOR_TYPE_GENARRAY:
+                    current_command = "pressure"
+                    central.write(current_command, with_response)
+                    current_command = "temp"
+                    central.write(current_command, with_response)
+                elif connected_sensor_type is _SENSOR_TYPE_GPS:
+                    print("GPS code goes here")
+                else:
+                    print("Unsupported sensor array")
+
+                #v = str(i) + "_"
+                #print("TX", v)
+                #central.write(v, with_response)
+                #v = "test"
+                #central.write(v, with_response)
             except Exception as tx_error:
                 print("TX failed: ", tx_error)
             i += 1
-            time.sleep_ms(400) #if with_response else 30)
+            time.sleep_ms(1000) #if with_response else 30)
         else:
             time.sleep_ms(10000)
             central.scan(callback=on_scan)    

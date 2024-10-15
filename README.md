@@ -2,7 +2,7 @@
 
 ## A Heads-Up Display for sportswear!
 
-More coming soon-ish! ;)
+HelmHUD is a head-mounted heads-up display that displays real-time data from an array of sensors, whether they be environment sensors, heart rate monitors, or GPS modules. 
 
 <footer>
 

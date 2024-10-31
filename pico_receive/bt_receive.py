@@ -41,7 +41,7 @@ _UART_TX = (
 )
 _UART_RX = (
     bluetooth.UUID("6E400002-B5A3-F393-E0A9-E50E24DCCA9E"),
-    _FLAG_WRITE,
+    _FLAG_WRITE, 
 )
 _UART_SERVICE = (
     _UART_UUID,
@@ -54,6 +54,8 @@ _SENSOR_TYPE_GPS = "2"
 
 connected_sensor_type = "0"
 current_command = "none"
+command_queue_index = 0
+ready_next_command = True
 
 class BLESimpleCentral:
     def __init__(self, ble, rxbuf=100):
@@ -204,9 +206,11 @@ class BLESimpleCentral:
         self._reset()
 
     def write(self, v, response=False):
+        #print("writing data to bluetooth")
         if not self.is_connected():
+            #print("self is no longer connected!")
             return
-        self._ble.gattc_write(self._conn_handle, self._rx_handle, v, 1 if response else 0)
+        #print(self._ble.gattc_write(self._conn_handle, self._rx_handle, v, 1 if response else 0))
 
     # Set handler for when data is received over the UART.
     def on_notify(self, callback):
@@ -251,20 +255,33 @@ def hhuart_receiver():
             central.scan(callback=on_scan)
 
     print("Connected")
+    
+    def clear_status_commands():
+        global current_command#, ready_next_command
+        current_command = "none"
+        #print("Test")
+        #ready_next_command = True
 
     def on_rx(v):
-        global connected_sensor_type, current_command
-        #print("RX", str(v, 'utf8'))
-        print(current_command)
-        if current_command == "type":
-            connected_sensor_type = str(v, 'utf8')
-            current_command = "none"
-            print("Current type now set to: ", connected_sensor_type)
-        elif current_command == "pressure":
-            print("Pressure: ", str(v, 'utf8'))
-            current_command = "none"
+        global connected_sensor_type, current_command, ready_next_command
+        print("RX", str(v, 'utf8'))
+        if str(v, 'utf8') != "still_polling":
+            if current_command == "type":
+                connected_sensor_type = str(v, 'utf8')
+                clear_status_commands()
+                print("Current type now set to: ", connected_sensor_type)        
+            elif current_command == "temp":
+                print("Temp: ", str(v, 'utf8'), "℃")
+                clear_status_commands()
+            elif current_command == "pressure":
+                print("Pressure: ", str(v, 'utf8'))
+                clear_status_commands()
+                
+            else:
+                print("Requested: ", current_command, ", Received: ", str(v, 'utf8'))
         else:
-            print("Nothing to see here for now")
+            print("Sensor is still polling")
+            ready_next_command = False
         
     central.on_notify(on_rx)
     
@@ -272,34 +289,56 @@ def hhuart_receiver():
 
     i = 0
     
+    SENSOR_TYPE_GENARRAY_COMMANDS = ["pressure", "temp", "hum", "lux", "uvs", "gas", "voc", "acc", "gyr", "mag", "hr"]
+    ready_next_command = True
+    command_queue_index = 0
+    commands_sent = 0
+    
     while True:
-        if central.is_connected():
-            try:
-                if connected_sensor_type is _SENSOR_TYPE_NONE:
-                    current_command = "type"
-                    central.write(current_command, with_response)
-                elif connected_sensor_type is _SENSOR_TYPE_GENARRAY:
-                    current_command = "pressure"
-                    central.write(current_command, with_response)
-                    current_command = "temp"
-                    central.write(current_command, with_response)
-                elif connected_sensor_type is _SENSOR_TYPE_GPS:
-                    print("GPS code goes here")
-                else:
-                    print("Unsupported sensor array")
+        if ready_next_command is True:
+            if central.is_connected():
+                try:
+                    if connected_sensor_type is _SENSOR_TYPE_NONE:
+                        current_command = "type"
+                        central.write(current_command, with_response)       
+                    
+                    elif connected_sensor_type is _SENSOR_TYPE_GENARRAY:
+                        #print("Test")
+                        current_command = SENSOR_TYPE_GENARRAY_COMMANDS[command_queue_index]
+                        print("Command index: ", command_queue_index, "(", current_command, ")")
+                        #ready_next_command = False
+                        central.write(current_command, with_response)
+                        print("Command written")
+                        command_queue_index += 1
+                        commands_sent += 1
+                        print("Commands sent: ", commands_sent)
+                        if command_queue_index > len(SENSOR_TYPE_GENARRAY_COMMANDS) - 1:
+                            time.sleep_ms(10000)
+                            command_queue_index = 0
+                    
+                    
+                    elif connected_sensor_type is _SENSOR_TYPE_GPS:
+                        print("GPS code goes here")
+                    else:
+                        print("Unsupported sensor array")
 
-                #v = str(i) + "_"
-                #print("TX", v)
-                #central.write(v, with_response)
-                #v = "test"
-                #central.write(v, with_response)
-            except Exception as tx_error:
-                print("TX failed: ", tx_error)
-            i += 1
-            time.sleep_ms(1000) #if with_response else 30)
-        else:
-            time.sleep_ms(10000)
-            central.scan(callback=on_scan)    
+                    #central.write("heartbeat")
+                    central.send("heartbeat")
+                    #v = str(i) + "_"
+                    #print("TX", v)
+                    #central.write(v, with_response)
+                    #v = "test"
+                    #central.write(v, with_response)
+                #try:
+                    #central.write("blah")
+                    #central.write(str(i))
+                except Exception as tx_error:
+                    print("TX failed: ", tx_error)
+                i += 1
+                time.sleep_ms(1000) #if with_response else 30)
+            else:
+                time.sleep_ms(10000)
+                central.scan(callback=on_scan)
 
 if __name__ == "__main__":
     hhuart_receiver()

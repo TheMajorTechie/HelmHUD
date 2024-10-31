@@ -420,11 +420,11 @@ class VOC_Algorithm():
 
         sigmoid_gamma_mean = self.VocAlgorithm__mean_variance_estimator___sigmoid__process(self.m_Mean_Variance_Estimator___Uptime_Gamma)
 
-        gamma_mean = self.m_Mean_Variance_Estimator___Gamma +\r
+        gamma_mean = self.m_Mean_Variance_Estimator___Gamma +\
          (self.fix16_mul((self.m_Mean_Variance_Estimator___Gamma_Initial_Mean -
                     self.m_Mean_Variance_Estimator___Gamma),sigmoid_gamma_mean))
 
-        gating_threshold_mean =\r
+        gating_threshold_mean =\
         (self.F16(self.VocAlgorithm_GATING_THRESHOLD) +
          (self.fix16_mul(
             self.F16((self.VocAlgorithm_GATING_THRESHOLD_INITIAL -
@@ -441,14 +441,14 @@ class VOC_Algorithm():
         sigmoid_gamma_variance = self.VocAlgorithm__mean_variance_estimator___sigmoid__process(
             self.m_Mean_Variance_Estimator___Uptime_Gamma)
         
-        gamma_variance =\r
+        gamma_variance =\
         (self.m_Mean_Variance_Estimator___Gamma +
          (self.fix16_mul(
              (self.m_Mean_Variance_Estimator___Gamma_Initial_Variance -
               self.m_Mean_Variance_Estimator___Gamma),
              (sigmoid_gamma_variance - sigmoid_gamma_mean))))
 
-        gating_threshold_variance =\r
+        gating_threshold_variance =\
         (self.F16(self.VocAlgorithm_GATING_THRESHOLD) +
          (self.fix16_mul(
              self.F16((self.VocAlgorithm_GATING_THRESHOLD_INITIAL -
@@ -458,12 +458,12 @@ class VOC_Algorithm():
         self.VocAlgorithm__mean_variance_estimator___sigmoid__set_parameters(self.F16(1.), gating_threshold_variance,
         self.F16(self.VocAlgorithm_GATING_THRESHOLD_TRANSITION))
 
-        sigmoid_gating_variance =\r
+        sigmoid_gating_variance =\
         self.VocAlgorithm__mean_variance_estimator___sigmoid__process(voc_index_from_prior)
-        self.m_Mean_Variance_Estimator__Gamma_Variance =\r
+        self.m_Mean_Variance_Estimator__Gamma_Variance =\
         self.fix16_mul(sigmoid_gating_variance, gamma_variance)
-        self.m_Mean_Variance_Estimator___Gating_Duration_Minutes =\r
-        self.m_Mean_Variance_Estimator___Gating_Duration_Minutes +\r
+        self.m_Mean_Variance_Estimator___Gating_Duration_Minutes =\
+        self.m_Mean_Variance_Estimator___Gating_Duration_Minutes +\
          (self.fix16_mul(self.F16((self.VocAlgorithm_SAMPLING_INTERVAL / 60.)),
                     ((self.fix16_mul((self.F16(1.) - sigmoid_gating_mean),
                                 self.F16((1. + self.VocAlgorithm_GATING_MAX_RATIO)))) -
@@ -472,7 +472,7 @@ class VOC_Algorithm():
         if self.m_Mean_Variance_Estimator___Gating_Duration_Minutes < self.F16(0.):
             self.m_Mean_Variance_Estimator___Gating_Duration_Minutes = self.F16(0.)
         
-        if self.m_Mean_Variance_Estimator___Gating_Duration_Minutes >\r
+        if self.m_Mean_Variance_Estimator___Gating_Duration_Minutes >\
             self.m_Mean_Variance_Estimator__Gating_Max_Duration_Minutes:
             self.m_Mean_Variance_Estimator___Uptime_Gating = self.F16(0.)
         
@@ -524,7 +524,7 @@ class VOC_Algorithm():
                             additional_scaling)),
                         delta_sgp))))))
 
-            self.m_Mean_Variance_Estimator___Mean =\r
+            self.m_Mean_Variance_Estimator___Mean =\
                     (self.m_Mean_Variance_Estimator___Mean +
                     (self.fix16_mul(self.m_Mean_Variance_Estimator__Gamma_Mean,
                             delta_sgp)))

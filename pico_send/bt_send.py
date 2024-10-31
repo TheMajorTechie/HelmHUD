@@ -2,8 +2,9 @@
 
 import bluetooth
 from lib.ble_advertising import advertising_payload
-
+import wired
 from micropython import const
+import _thread
 
 _IRQ_CENTRAL_CONNECT = const(1)
 _IRQ_CENTRAL_DISCONNECT = const(2)
@@ -35,6 +36,7 @@ class BLEUART:
         self._ble.irq(self._irq)
         ((self._handle_tx, self._handle_rx),) = self._ble.gatts_register_services((_UART_SERVICE,))
         self._connections = set()
+        self._rx_buffer = bytearray()
         self._write_callback = None
         self._payload = advertising_payload(name=name, services=[_UART_UUID])
         self._advertise()
@@ -77,40 +79,82 @@ def hhuart_sender():
     import time
     ble = bluetooth.BLE()
     uart = BLEUART(ble)
-    import wired
     #a dummy sensor data payload terminated with a newline
     sensorArray = [[813.79, 26.16, 23.84], 12.56, 0, [30779, 0], [-556, 144, -16168, 19, 70, 33, 9472, 36096, 56318], 0]
     packedArray = str(sensorArray)+"\n"
+    time_since_command = 0
 
     def on_rx(v):
+        global time_since_command
+        time_since_command = 0
         print("RECEIVED DATA")
         print("RX", v)
         rq = v.decode('UTF-8')
-        if rq is "id":
-            uart.send("HelmHUD Sensor Unit")
-            
-        elif rq is "type":
-            uart.send("1")
-            
-        elif rq is "pressure":
-            uart.send(str(wired.pressure))
-            
-        elif rq is "temp":
-            uart.send(str(wired.temp))
-            
+        if wired.sensor_polling is False:
+            if rq is "id":
+                uart.send("HelmHUD Sensor Unit")
+                
+            elif rq is "type":
+                uart.send("1")
+                
+            elif rq is "pressure":
+                uart.send(str(wired.pressure))
+                
+            elif rq is "temp":
+                uart.send(str(wired.temp))
+                
+            elif rq is "hum":
+                uart.send(str(wired.hum))
+                
+            elif rq is "lux":
+                uart.send(str(wired.lux))
+                
+            elif rq is "uvs":
+                uart.send(str(wired.uvs))
+                
+            elif rq is "gas":
+                uart.send(str(wired.gas))
+                
+            elif rq is "voc":
+                uart.send(str(wired.voc))
+                
+            elif rq is "acc":
+                uart.send("unimplemented")
+            elif rq is "gyr":
+                uart.send("unimplemented")
+            elif rq is "mag":
+                uart.send("unimplemented")
+            elif rq is "hr":
+                uart.send(str(wired.heartrate))
+            elif rq is "heartbeat":
+                uart.send("heartbeat acknowledged")
+            else:
+                print(rq)
+                uart.send(str("Unexpected request: ", rq))
         else:
-            print(rq)
-            uart.send(str("Unexpected request: ", rq))
+            print("Attempted to get sensor data during polling")
+            uart.send("still_polling")
         
     uart.on_write(on_rx)
+        
 
     while True:
         #if uart.is_connected():
             #uart.send(packedArray)
             #print("asdf")
-        time.sleep_ms(100)
+        #time_since_command += 1    
+        wired.get_readouts()
+        
+        time.sleep_ms(10000)
+        #if time_since_command > 1000:
+        #    uart._advertise()
 
-    uart.close()
+    #uart.close()
 
 if __name__ == "__main__":
-    hhuart_sender()
+    try:
+        #sensorReadoutThread = _thread.start_new_thread(wired.get_readouts, ())
+        hhuart_sender()
+    except KeyboardInterrupt:
+        machine.reset()
+    

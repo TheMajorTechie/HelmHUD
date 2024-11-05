@@ -79,10 +79,6 @@ def hhuart_sender():
     import time
     ble = bluetooth.BLE()
     uart = BLEUART(ble)
-    #a dummy sensor data payload terminated with a newline
-    sensorArray = [[813.79, 26.16, 23.84], 12.56, 0, [30779, 0], [-556, 144, -16168, 19, 70, 33, 9472, 36096, 56318], 0]
-    packedArray = str(sensorArray)+"\n"
-    time_since_command = 0
 
     def on_rx(v):
         global time_since_command
@@ -138,22 +134,12 @@ def hhuart_sender():
     uart.on_write(on_rx)
         
 
-    while True:
-        #if uart.is_connected():
-            #uart.send(packedArray)
-            #print("asdf")
-        #time_since_command += 1    
+    while True:  
         wired.get_readouts()
-        
         time.sleep_ms(10000)
-        #if time_since_command > 1000:
-        #    uart._advertise()
-
-    #uart.close()
 
 if __name__ == "__main__":
     try:
-        #sensorReadoutThread = _thread.start_new_thread(wired.get_readouts, ())
         hhuart_sender()
     except KeyboardInterrupt:
         machine.reset()

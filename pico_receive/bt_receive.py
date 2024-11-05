@@ -257,10 +257,8 @@ def hhuart_receiver():
     print("Connected")
     
     def clear_status_commands():
-        global current_command#, ready_next_command
+        global current_command
         current_command = "none"
-        #print("Test")
-        #ready_next_command = True
 
     def on_rx(v):
         global connected_sensor_type, current_command, ready_next_command
@@ -302,13 +300,12 @@ def hhuart_receiver():
                         current_command = "type"
                         central.write(current_command, with_response)       
                     
+                    #Commands to send in sequence if the sensor type is "Generic Array"
                     elif connected_sensor_type is _SENSOR_TYPE_GENARRAY:
-                        #print("Test")
                         current_command = SENSOR_TYPE_GENARRAY_COMMANDS[command_queue_index]
-                        print("Command index: ", command_queue_index, "(", current_command, ")")
-                        #ready_next_command = False
+                        #print("Command index: ", command_queue_index, "(", current_command, ")")
                         central.write(current_command, with_response)
-                        print("Command written")
+                        #print("Command written")
                         command_queue_index += 1
                         commands_sent += 1
                         print("Commands sent: ", commands_sent)
@@ -316,26 +313,15 @@ def hhuart_receiver():
                             time.sleep_ms(10000)
                             command_queue_index = 0
                     
-                    
                     elif connected_sensor_type is _SENSOR_TYPE_GPS:
                         print("GPS code goes here")
                     else:
                         print("Unsupported sensor array")
-
-                    #central.write("heartbeat")
-                    central.send("heartbeat")
-                    #v = str(i) + "_"
-                    #print("TX", v)
-                    #central.write(v, with_response)
-                    #v = "test"
-                    #central.write(v, with_response)
-                #try:
-                    #central.write("blah")
-                    #central.write(str(i))
+                    
                 except Exception as tx_error:
                     print("TX failed: ", tx_error)
                 i += 1
-                time.sleep_ms(1000) #if with_response else 30)
+                time.sleep_ms(1000)
             else:
                 time.sleep_ms(10000)
                 central.scan(callback=on_scan)

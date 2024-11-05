@@ -17,6 +17,14 @@ print("MPU9250 9-DOF I2C address:0X68")
 
 mpu = MPU925x.MPU925x()
 
+icm = mpu.ReadAll()
+x_new = icm[6]
+z_new = icm[8]
+
+#To have 4 or 8 cardinal directions on the compass
+#1 = 4, 0 = 8
+directions = True
+
 # Constants
 MAX_SPEED_MPH = 48.0  # Speed threshold for baseline reset
 SPEED_CONVERSION_FACTOR = 5.17648788  # Pre-calculated factor based on circumference and conversion to mph
@@ -29,6 +37,7 @@ magnet_detected = False  # State variable to track magnet detection
 
 # Function to compute baseline manually
 def compute_baseline(readings):
+    print(compass(x_new, z_new))
     return [sum(axis) / len(axis) for axis in zip(*readings)]
 
 # Function to reset the baseline
@@ -41,6 +50,48 @@ def reset_baseline():
     new_baseline = compute_baseline(baseline_readings)
     print("New baseline established:", new_baseline)
     return new_baseline
+
+def compass(x_value, z_value):
+    if directions:
+        if x_value > 58000 and x_value <= 63000 and z_value > 57000 and z_value <= 62000:
+            direction = "North"
+        #elif x_value > 35000 and x_value <= 59000:
+        #    direction = "North East"
+        elif x_value > 500 and x_value <= 4000 and z_value > 2000 and z_value <= 6000:
+            direction = "East"
+        #elif x_value > 12500 and x_value <= 20000:
+        #    direction = "South East"
+        elif x_value > 11000 and x_value <= 14000 and z_value > 54000 and z_value <= 63000:
+            direction = "South"
+        #elif x_value > 6000 and x_value <= 10000:
+        #    direction = "South West"
+        elif x_value > 2000 and x_value <= 7000 and z_value > 48000 and z_value <= 54000:
+            direction = "West"
+        #elif x_value >= 0 and x_value <= 2000:
+        #    direction = "North West"
+        else:
+            direction = "Unknown"
+    else:
+        if x_value > 58000 and x_value <= 63000 and z_value > 57000 and z_value <= 62000:
+            direction = "North"
+        elif x_value > 4000 and x_value <= 8000 and z_value > 1000 and z_value <= 10000:
+            direction = "North East"
+        elif x_value > 500 and x_value <= 4000 and z_value > 2000 and z_value <= 6000:
+            direction = "East"
+        elif x_value > 8000 and x_value <= 10999 and z_value > 57000 and z_value <= 62000:
+            direction = "South East"
+        elif x_value > 11000 and x_value <= 14000 and z_value > 59000 and z_value <= 63000:
+            direction = "South"
+        elif x_value > 6000 and x_value <= 10000 and z_value > 57000 and z_value <= 62000:
+            direction = "South West"
+        elif x_value > 2000 and x_value <= 7000 and z_value > 48000 and z_value <= 54000:
+            direction = "West"
+        elif x_value >= 7000 and x_value <= 14000 and z_value > 50000 and z_value <= 60000:
+            direction = "North West"
+        else:
+            direction = "Unknown"
+    return direction
+
 
 # Collect baseline readings
 print("Collecting baseline data...")
@@ -91,4 +142,3 @@ while True:
             magnet_detected = False  # Reset magnet_detected
 
     time.sleep(SLEEP_DURATION)  # Short sleep to prevent high CPU usage
-

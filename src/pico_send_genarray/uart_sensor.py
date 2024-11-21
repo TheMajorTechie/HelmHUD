@@ -40,16 +40,26 @@ while True:
         elif rq is "voc":
             uart.write(str(wired.voc))
             
-        elif rq is "acc":
-            uart.write("unimplemented")
-        elif rq is "gyr":
-            uart.write("unimplemented")
+        elif rq is "acc0":
+            uart.write("%d" %(wired.icm[0]))
+        elif rq is "acc1":
+            uart.write("%d" %(wired.icm[1]))
+        elif rq is "acc2":
+            uart.write("%d" %(wired.icm[2]))
+            
+        elif rq is "gyr0":
+            uart.write("%d" %(wired.icm[3]))
+        elif rq is "gyr1":
+            uart.write("%d" %(wired.icm[4]))
+        elif rq is "gyr2":
+            uart.write("%d" %(wired.icm[5]))
+            
         elif rq is "mag":
             uart.write("unimplemented")
         elif rq is "hr":
             uart.write(str(wired.heartrate))
-        elif rq is "heartbeat":
-            uart.write("heartbeat acknowledged")
+            
         else:
             print(rq)
             uart.write(str("Unexpected request: ", rq))
+

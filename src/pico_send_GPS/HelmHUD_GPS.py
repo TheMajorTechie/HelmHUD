@@ -20,7 +20,7 @@ import DFRobot_GNSS as GNSS
 class HelmHUD_GPS: 
     
     #MEMBER VARIABLES
-    data = ["[!]NO SIGNAL","/NOT READY[!]"]
+    data = ["[!]NEVR","/INITD[!]"] #Lat, Lon
     gnss = 0
     location = GNSS.struct_lat_lon()
     
@@ -55,12 +55,12 @@ class HelmHUD_GPS:
             #Comms have failed. Print correct error statement.
             if (self.location.lat_direction == 'Y'):
                 #There has been no previous signal. GPS is either not ready or has no signal.
-                self.data = ["[!]NO SIGNAL","/NOT READY[!]"] 
+                self.data = ["[!]NO SIG","OR NOT RDY"] 
             else:
                 #There has been a previous signal, print last known location with a warning.
                 if self.data[0][0] != "[":
                     self.data[0] = "[!]" + self.data[0]
-                    self.data[1] = self.data[1] + "[!]"
+                    self.data[1] = "[!]"+self.data[1]
             
         else:
             #Comms have succeeded! change the last known location to this one, and print it out.
@@ -78,6 +78,4 @@ class HelmHUD_GPS:
     def __init__(self):
         self.gnss = GNSS.DFRobot_GNSS_I2C(0x00, GNSS.GNSS_DEVICE_ADDR)
         self.location = GNSS.struct_lat_lon()
-        self.data = ["[!]NO SIGNAL","/NOT READY[!]"]
-        
-    
+        self.data = ["[!]NOW","/INITD[!]"]

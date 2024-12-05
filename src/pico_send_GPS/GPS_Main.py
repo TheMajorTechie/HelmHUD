@@ -49,14 +49,13 @@ def gps_data_single_string():
     return gps.data[0] + gps.data[1]
 
 while True:
-    time.sleep(5) #5 seconds for gps refresh
     gps.get_data()
     print("Attempting to send data:",gps_data_single_string())
     try: #send to server
         client = socket.socket()
         client.connect((SERVER_IP, SERVER_PORT))
-        message = "GPS:"
-        message = message + gps_data_single_string()
+        
+        message = "Lat: "+gps.data[0]+"\nLong: "+gps.data[1]
         print("Message:",message)
         client.send(message.encode())
         
@@ -66,4 +65,5 @@ while True:
         client.close()
     except Exception as e:
         print("Failed to send data to server:",e)
-        
+    
+    time.sleep(5) #5 seconds for gps refresh

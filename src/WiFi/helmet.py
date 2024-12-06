@@ -7,16 +7,6 @@ import lib.ssd1306 as ssd1306
 # Set up I2C for OLED
 i2c_display = machine.I2C(0, scl=machine.Pin(5), sda=machine.Pin(4), freq=400000)
 
-# Scan I2C bus to find the OLED's address
-print("Scanning I2C bus...")
-devices = i2c_display.scan()
-if devices:
-    print("I2C device addresses:", [hex(device) for device in devices])
-    oled_addr = devices[0]  # Use the first found device
-else:
-    print("No I2C devices found")
-    oled_addr = 0x3C  # Default address
-
 # Define constants and variables for your display
 ORIENTATION = False
 TRANSPARENT = False
@@ -34,6 +24,14 @@ else:
 # Initialize the OLED display with the selected address and dimensions
 oled = ssd1306.SSD1306_I2C(oled_width, oled_height, i2c_display, addr=oled_addr)
 
+def flip_display(oled): # Needed for mounting physical display upside down.
+    # Set display to normal orientation
+    oled.write_cmd(0xA0)  # Segment remap normal
+    oled.write_cmd(0xC0)  # COM scan direction normal
+
+# Flip the display after initialization
+flip_display(oled)
+
 def draw_symbol(oled, symbol):
     for y, row in enumerate(symbol):
         for x, pixel in enumerate(row):
@@ -41,20 +39,6 @@ def draw_symbol(oled, symbol):
                 oled.pixel(x + 123, y, pixel)  # Vertical Battery Position
             else:
                 oled.pixel(x + 112, y, pixel)  # Horizontal Battery Position
-    # Remove oled.show() to control updates from the main loop
-
-def draw_text_rotated(oled, text, x, y):
-    # Loop through each character in the text
-    for i, char in enumerate(text):
-        char_x = x + i * 8  # Calculate character's original x position
-        char_y = y  # Original y position
-
-        # Flip the coordinates for 180-degree rotation
-        rotated_x = oled_width - char_x - 8
-        rotated_y = oled_height - char_y - 8
-
-        # Draw each character flipped by rendering it at the new rotated position
-        oled.text(char, rotated_x, rotated_y)
     # Remove oled.show() to control updates from the main loop
 
 # Initialize with 3 battery bars
@@ -180,8 +164,7 @@ ap.active(True)
 while not ap.active():
     time.sleep(1)
 
-print(AP_SSID)
-print('Access Point Active')
+print(AP_SSID + ' Active')
 print('Network config:', ap.ifconfig())
 
 # --- Server Setup ---
@@ -195,9 +178,12 @@ server.settimeout(0.5)  # Set a timeout for accept()
 print('Server listening on', addr)
 
 # Variables to store the latest data from clients
-latest_bpm = None
-latest_speed = None
-latest_direction = None 
+latest_bpm = 0
+latest_speed = 0
+latest_direction = 0
+latest_temp = 0
+latest_lat = 0
+latest_long = 0
 
 # Main loop
 while True:
@@ -210,7 +196,7 @@ while True:
             battery_bars = 0
         start_time = current_time  # Reset the start time
 
-    # Update the display
+    # Update the Battery Icon
     oled.fill(0)  # Clear the display
 
     if ORIENTATION:
@@ -232,28 +218,42 @@ while True:
         else:
             draw_symbol(oled, HORIZ_EMPTY)
 
-    # Display the latest BPM and Speed
-    if latest_bpm is not None:
-        oled.text(latest_bpm + ' bpm', 80, 25)
+    # Update the other stats
+    if latest_bpm: # Heartrate
+        oled.text(latest_bpm + ' bpm', 80, oled_height-8)
     else:
-        oled.text('-- bpm', 80, 25)
+        oled.text('-- bpm', 80, oled_height-8)
 
-    if latest_speed is not None:
-        oled.text(latest_speed + ' mph', 0, 25)
+    if latest_speed: # Speed
+        oled.text(latest_speed + ' mph', 0, oled_height-8)
     else:
-        oled.text('-- mph', 0, 25)
+        oled.text('-- mph', 0, oled_height-8)
         
-    # Display Direction
-    if latest_direction is not None:
-        oled.text(latest_direction, 40, 0)
+    if latest_temp: # Temperature
+        oled.text(latest_temp + 'F', 0, 0)
     else:
-        oled.text('', 40, 0)
+        oled.text('--', 0, 0)
+        
+    if latest_direction: # Direction
+        oled.text(latest_direction, 61, 0)
+    else:
+        oled.text('--', 61, 0)
+    
+    if latest_lat: # GPS
+        oled.text('Lat:' + latest_lat, 5, 12)
+    else:
+        oled.text('Lat: --', 5, 12)
+
+    if latest_long:
+        oled.text('Lon:' + latest_long, 5, 20)
+    else:
+        oled.text('Lon: --', 5, 20)
 
     oled.show()
 
     # Accept incoming connections
     try:
-        print('Waiting for client connection...')
+        #print('Waiting for client connection...')
         client, addr = server.accept()
         print('Client connected from', addr)
         data = client.recv(1024)
@@ -264,26 +264,59 @@ while True:
         if message.startswith('BPM: '):
             latest_bpm = message[5:].strip()
         elif message.startswith('Speed: '):
-            # Split the message to extract speed and direction
+            # Split the message to extract speed, direction, and temp
             lines = message.split('\n')
             speed_line = lines[0]
-            direction_line = lines[1] if len(lines) > 1 else 'Direction: Unknown'
+            direction_line = ''
+            temp_line = ''
+
+            # Check for direction and temperature in the remaining lines
+            for line in lines[1:]:
+                if line.startswith('Direction:'):
+                    direction_line = line
+                elif line.startswith('Temp:'):
+                    temp_line = line
 
             latest_speed = speed_line[7:].strip()
-            if direction_line.startswith('Direction:'):
+
+            if direction_line:
                 latest_direction = direction_line[10:].strip()
-            else:
-                latest_direction = 'Unknown'
+            else: # Do nothing
+                latest_direction = ''
+
+            if temp_line:
+                latest_temp = temp_line[6:].strip()
+            #else: # Do nothing
+            #    latest_temp = ''
+        elif message.startswith('Temp: '):
+            latest_temp = message[6:].strip()
+            
+        elif message.startswith('Lat: '):
+            # Split GPS message
+            lines = message.split('\n')
+            lat_line = lines[0]
+            long_line = ''
+            
+            for line in lines[1:]:
+                if line.startswith('Lat:'):
+                    lat_line = line
+                elif line.startswith('Long:'):
+                    long_line = line
+
+            latest_lat = lat_line[5:].strip()
+
+            if long_line:
+                latest_long = long_line[6:].strip()
+            else: # Do nothing
+                latest_long = ''
         else:
             print('Unknown message format')
-        
+
         # Send acknowledgment
         client.send('Acknowledged'.encode())
         client.close()
     except OSError as e:
         # Handle timeout exception
         pass
-    except Exception as e:
+    except Exception as e: # Most likely need to restart everything
         print('Server exception:', e)
-        pass
-

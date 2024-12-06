@@ -3,15 +3,15 @@ import MPU925x  # Gyroscope/Acceleration/Magnetometer
 from machine import Pin, I2C
 import network  # Import network module for Wi-Fi
 import socket   # Import socket module for networking
-from lib.env import BME280 # Atmospheric Pressure/Temperature and humidity
+from lib.env import BME280
 
 # --- Network Setup ---
-AP_SSID = 'PicoAP4' # SSID of Pico we are attempting to connect to
+# Define the SSID and password of the AP to connect to
+AP_SSID = 'PicoAP4'
 
-# Initialize the BME and MPU sensors
-bme280 = BME280.BME280()
+# Initialize the BME280 sensor
+bme280 = BME280.BME280()  # Atmospheric Pressure/Temperature and humidity
 bme280.get_calib_param()
-mpu = MPU925x.MPU925x()
 
 # Initialize the Station interface
 sta = network.WLAN(network.STA_IF)
@@ -24,17 +24,19 @@ for net in networks:
     ssid = net[0].decode()
     print(ssid)
 
-# Check if 'PicoAP4' is in the list, connect if found
+# Check if 'PicoAP4' is in the list
 if AP_SSID not in [net[0].decode() for net in networks]:
-    print(f"Network '{AP_SSID}' not found. Check if the AP is active and nearby.")
+    print(f"Access Point '{AP_SSID}' not found. Check if the AP is active and nearby.")
 else:
-    print(f"Access Point '{AP_SSID}' found. ")
+    print(f"Access Point '{AP_SSID}' found. Attempting to connect...")
     sta.connect(AP_SSID)
-    while not sta.isconnected(): # Wait for connection
-        print('Connecting to network... ')
+
+    # Wait for connection
+    while not sta.isconnected():
+        print('Connecting to network...')
         time.sleep(1)
 
-    print('Connected')
+    print('Station Connected')
     print('Network config:', sta.ifconfig())
 
     # Server IP is the IP address of the AP (usually 192.168.4.1)
@@ -44,29 +46,34 @@ else:
     # Initialize I2C
     i2c = I2C(0, scl=Pin(21), sda=Pin(20), freq=400000)
 
+    print("This is the Environment Sensor test program with speed calculation...")
+    print("MPU9250 9-DOF I2C address:0X68")
+
+    mpu = MPU925x.MPU925x()
 
     # To have 4 or 8 cardinal directions on the compass
     # True = 4 directions, False = 8 directions
     use_four_directions = True
 
     # Constants
-    MAX_SPEED_MPH = 42.0  # Speed threshold for baseline reset
+    MAX_SPEED_MPH = 48.0  # Speed threshold for baseline reset
     SPEED_CONVERSION_FACTOR = 5.17648788  # Pre-calculated factor based on circumference and conversion to mph
     SLEEP_DURATION = 0.001  # Sleep duration in seconds (reduced for faster polling)
 
     # Initialize variables
-    spike_threshold = 12000  # Adjust this value based on your setup
+    spike_threshold = 10000  # Adjust this value based on your setup
     previous_time = None  # Initialize previous_time to None
     magnet_detected = False  # State variable to track magnet detection
-    current_direction = "Searching"  # Initialize current_direction
+    current_direction = "Unknown"  # Initialize current_direction
 
     # Flag to ensure temperature is sent only once
     temp_sent = False
 
     def compute_temp():
-        temp_c = bme280.readData()[1]
-        # C to F conversion is C*1.8+32 but sensor is always warmer than ambient
-        temp_f = round(temp_c * 1.5) + 32
+        bme = bme280.readData()
+        temp_c = bme[1]
+        temp_f = (temp_c * 1.8) + 32
+        temp_f = round(temp_f)
         return temp_f
 
     # Function to compute baseline manually
@@ -88,10 +95,9 @@ else:
         z_value = baseline_readings[-1][2]
         global current_direction
         current_direction = compass(x_value, z_value)
-        #print("Direction:", current_direction)
+        print("Direction:", current_direction)
         return new_baseline
 
-    #Function to handle exceeding max sensor value and wrapping to 0
     def is_in_range(value, lower, upper):
         max_value = 65535
         if lower <= upper:
@@ -104,12 +110,12 @@ else:
         delta = 6000  # Adjust the range as needed
         max_value = 65535
 
-        # Cardinal values (Needs manual recalibration when changing location)
+        # Directions with new calibration values
         directions = {
-            "N": {"x": 58000, "z": 58500},
-            "E":  {"x": 2500,  "z": 65000},
-            "S": {"x": 11500, "z": 58000},
-            "W":  {"x": 65000, "z": 47000}
+            "North": {"x": 58000, "z": 58500},
+            "East":  {"x": 2500,  "z": 65000},
+            "South": {"x": 11500, "z": 58000},
+            "West":  {"x": 65000, "z": 47000}
         }
 
         for direction, center in directions.items():
@@ -125,14 +131,14 @@ else:
             if is_in_range(x_value, x_lower, x_upper) and is_in_range(z_value, z_lower, z_upper):
                 return direction
 
-        return "--"
+        return "Unknown"
 
     # Collect baseline readings
     print("Collecting baseline data...")
     baseline = reset_baseline()
 
     while True:
-        # Send temperature once upon reset
+        # Send temperature once upon boot
         if not temp_sent:
             try:
                 temp = compute_temp()
@@ -146,7 +152,7 @@ else:
                 print('Server response:', response.decode())
                 client.close()
                 temp_sent = True  # Set flag to True after sending temperature
-                print(f"Temperature {temp}F sent to server.")
+                print(f"Temperature {temp}°F sent to server.")
             except Exception as e:
                 print('Failed to send temperature to server:', e)
 
@@ -170,16 +176,16 @@ else:
                     # Ensure valid time difference for speed calculation
                     if time_difference > 0:
                         # Calculate speed in mph
-                        speed_mph = round(SPEED_CONVERSION_FACTOR / time_difference)
+                        speed_mph = SPEED_CONVERSION_FACTOR / time_difference
 
                         # Check if speed exceeds the threshold
                         if speed_mph > MAX_SPEED_MPH:
-                            print(f"Speed exceeded {MAX_SPEED_MPH:} mph. Resetting baseline.")
+                            print(f"Speed exceeded {MAX_SPEED_MPH:.2f} mph. Resetting baseline.")
                             baseline = reset_baseline()
                             previous_time = None  # Reset previous_time
                         else:
                             print(f"Rotation detected!")
-                            print(f"Speed: {speed_mph:} mph, Direction: {current_direction}")
+                            print(f"Speed: {speed_mph:.2f} mph, Direction: {current_direction}")
                             previous_time = current_time
 
                             # --- Send speed and direction data to server ---
@@ -189,7 +195,7 @@ else:
                                 client.connect((SERVER_IP, SERVER_PORT))
 
                                 # Send speed and direction data to the server
-                                message = f"Speed: {speed_mph:}\nDirection: {current_direction}"
+                                message = f"Speed: {speed_mph:.2f}\nDirection: {current_direction}"
                                 client.send(message.encode())
 
                                 # Receive response from the server
@@ -211,7 +217,7 @@ else:
                 magnet_detected = True  # Set magnet_detected to True
         else:
             # Wait until magnetic field returns close to baseline
-            if diff_magnitude < spike_threshold:
+            if diff_magnitude < spike_threshold / 2:
                 magnet_detected = False  # Reset magnet_detected
 
         time.sleep(SLEEP_DURATION)  # Short sleep to prevent high CPU usage

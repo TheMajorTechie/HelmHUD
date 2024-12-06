@@ -1,0 +1,21 @@
+title: HelmHUD
+description: A heads-up display for sportswear!
+theme: minima
+#remote_theme: pages-themes/slate@v0.2.0
+plugins:
+- jekyll-remote-theme # add this line to the plugins list if you already have one
+show_downloads: false
+basewebsite: /HelmHUD
+permalink: date
+collections:
+  authors:
+    output: true
+    permalink: author/:title/
+
+defaults:
+  -
+    scope:
+      path: ""
+      type: authors
+    values:
+      layout: author
